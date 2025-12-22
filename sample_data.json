@@ -1,0 +1,16 @@
+{
+    "create_test": {
+        "name": "Vitamin D Test",
+        "description": "Measures the level of vitamin D in your blood.",
+        "price": 1200.00,
+        "discounted_price": 1000.00,
+        "sample_type": "Blood",
+        "report_time_hours": 24,
+        "is_active": true,
+        "category_id": 1
+    },
+    "update_test": {
+        "price": 1100.00,
+        "discounted_price": 950.00
+    }
+}
