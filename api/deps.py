@@ -57,3 +57,12 @@ def get_current_admin_user(
             status_code=400, detail="The user doesn't have enough privileges"
         )
     return current_user
+
+def get_current_admin_or_staff_user(
+    current_user: User = Depends(get_current_active_user),
+) -> User:
+    if current_user.role not in ["ADMIN", "STAFF"] and not current_user.is_superuser:
+        raise HTTPException(
+            status_code=400, detail="The user doesn't have enough privileges"
+        )
+    return current_user

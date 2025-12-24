@@ -8,12 +8,16 @@ router = APIRouter()
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
 
 
+from api.deps import get_current_admin_or_staff_user
+from db.models.user import User
+
 @router.post("/upload-report")
 async def upload_report(
     user_id: int = Form(...),
     appointment_id: int = Form(...),
     phone_number: str = Form(...),
-    file: UploadFile = File(...)
+    file: UploadFile = File(...),
+    current_user: User = Depends(get_current_admin_or_staff_user)
 ):
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
