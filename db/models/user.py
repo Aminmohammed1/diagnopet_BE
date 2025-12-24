@@ -14,3 +14,5 @@ class User(Base):
     is_superuser: Mapped[bool] = mapped_column(Boolean, default=False)
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    role: Mapped[str] = mapped_column(String(50), default="USER")
+

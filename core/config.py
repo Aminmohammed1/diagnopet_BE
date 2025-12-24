@@ -19,7 +19,12 @@ class Settings(BaseSettings):
     ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 100
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    ADMIN_EMAIL: str | None = None
+    ADMIN_PASSWORD: str | None = None
+    ADMIN_NAME: str | None = "Super Admin"
+    ADMIN_PHONE: str | None = None
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 
 settings = Settings()

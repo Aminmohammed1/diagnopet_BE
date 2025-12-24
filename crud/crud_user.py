@@ -30,6 +30,7 @@ async def create(db: AsyncSession, obj_in: UserCreate) -> User:
         is_active=obj_in.is_active,
         is_superuser=obj_in.is_superuser,
         is_verified=obj_in.is_verified,
+        role=obj_in.role,
     )
 
     db.add(db_obj)

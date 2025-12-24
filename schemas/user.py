@@ -8,6 +8,7 @@ class UserBase(BaseModel):
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
+    role: Optional[str] = "USER"
 
 
 class UserCreate(UserBase):

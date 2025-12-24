@@ -1,4 +1,9 @@
 import os
+import sys
+
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from dotenv import load_dotenv
 from utils.supabase_storage import upload_pdf, get_signed_url
 from utils.send_whatsapp_msg import send_message_via_twilio_with_media

@@ -5,7 +5,15 @@ from db.session import get_db
 from schemas.user import User, UserCreate, UserUpdate
 from crud import crud_user
 
+from api import deps
+
 router = APIRouter()
+
+@router.get("/me", response_model=User)
+async def read_user_me(
+    current_user: User = Depends(deps.get_current_active_user),
+):
+    return current_user
 
 @router.get("/", response_model=List[User])
 async def read_users(

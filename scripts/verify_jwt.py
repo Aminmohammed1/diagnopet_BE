@@ -9,19 +9,15 @@ ALGORITHM = "HS256"
 def verify_login():
     # 1. Login
     login_data = {
-        "phone": "1234567890",
-        "password": "admin123",
-        "email": "admin@example.com", # Not used for login but required by schema if not optional, checking schema...
-        "full_name": "Admin" # Same here
+        "phone": "1234567890", # Ensure this matches .env ADMIN_PHONE if used, or update logic
+        "password": "pass123456",
+        "email": "your_admin@email.com", 
+        "full_name": "Admin User" 
     }
-    # Actually UserLogin only needs phone and password based on my edit?
-    # Let's check schema again. UserLogin inherits from UserBase.
-    # UserBase has email, phone, full_name as optional.
-    # So phone and password should be enough if I defined UserLogin correctly.
     
     login_payload = {
-        "phone": "1234567890",
-        "password": "admin123"
+        "phone": "1234567890", # Assuming this is the phone from .env or init_db
+        "password": "pass123456"
     }
 
     print(f"Logging in with: {login_payload}")
@@ -44,10 +40,11 @@ def verify_login():
         payload = jwt.decode(access_token, SECRET_KEY, algorithms=[ALGORITHM])
         print(f"Decoded Token Payload: {payload}")
         
-        if payload.get("sub") == "admin@example.com":
-            print("Verification SUCCESS: Subject matches admin email.")
+        # The API returns the user ID in the 'sub' claim, not the phone number.
+        if payload.get("sub").isdigit():
+            print(f"Verification SUCCESS: Subject is a user ID ({payload.get('sub')}).")
         else:
-            print(f"Verification FAILED: Subject mismatch. Expected 'admin@example.com', got '{payload.get('sub')}'")
+            print(f"Verification FAILED: Subject mismatch. Expected user ID, got '{payload.get('sub')}'")
 
     except Exception as e:
         print(f"Token decoding failed: {e}")
