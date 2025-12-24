@@ -62,3 +62,57 @@ async def upload_report(
     except Exception as e:
         print(f"Error in upload_report: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+from api.deps import get_current_user
+from utils.supabase_storage import list_files
+
+@router.get("/")
+async def get_user_reports(
+    current_user: User = Depends(get_current_user)
+):
+    """
+    List all reports for the current user.
+    """
+    try:
+        user_folder = f"user_{current_user.id}"
+        
+        # 1. List appointments folders
+        appointments = list_files(user_folder)
+        
+        reports = []
+        
+        if appointments:
+            for appt in appointments:
+                appt_folder_name = appt['name']
+                # Expecting format appointment_{id}
+                if not appt_folder_name.startswith("appointment_"):
+                    continue
+                
+                appt_path = f"{user_folder}/{appt_folder_name}"
+                
+                # 2. List files in appointment folder
+                files = list_files(appt_path)
+                
+                if files:
+                    for file in files:
+                        file_name = file['name']
+                        if file_name.endswith(".pdf"):
+                            file_path = f"{appt_path}/{file_name}"
+                            
+                            # 3. Generate signed URL
+                            signed_url = get_signed_url(file_path, expires_in=3600)
+                            
+                            reports.append({
+                                "filename": file_name,
+                                "path": file_path,
+                                "url": signed_url,
+                                "created_at": file.get("created_at"), # Supabase returns metadata
+                                "appointment_id": appt_folder_name.split("_")[1]
+                            })
+                            
+        return reports
+
+    except Exception as e:
+        print(f"Error in get_user_reports: {e}")
+        raise HTTPException(status_code=500, detail=str(e))

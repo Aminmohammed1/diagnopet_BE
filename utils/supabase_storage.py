@@ -36,3 +36,14 @@ def get_signed_url(file_path: str, expires_in: int = 3600):
     except Exception as e:
         print(f"Error generating signed URL: {e}")
         raise e
+
+def list_files(path: str):
+    """
+    Lists files in a specific path in Supabase Storage.
+    """
+    try:
+        res = supabase.storage.from_(supabase_bucket).list(path)
+        return res
+    except Exception as e:
+        print(f"Error listing files in Supabase: {e}")
+        raise e
