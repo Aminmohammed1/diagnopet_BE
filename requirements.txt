@@ -5,3 +5,9 @@ asyncpg
 pydantic
 pydantic-settings
 psycopg2-binary
+passlib[bcrypt]
+bcrypt
+email-validator
+python-jose[cryptography]
+twilio
+supabase
