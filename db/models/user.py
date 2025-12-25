@@ -1,5 +1,5 @@
 from sqlalchemy import String, Boolean
-from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.orm import Mapped, mapped_column, relationship
 from db.base import Base
 
 class User(Base):
@@ -16,3 +16,4 @@ class User(Base):
 
     role: Mapped[str] = mapped_column(String(50), default="USER")
 
+    addresses = relationship("Address", back_populates="user")
