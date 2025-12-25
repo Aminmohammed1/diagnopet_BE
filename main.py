@@ -4,9 +4,21 @@ from api.v1.api import api_router
 # Import models to ensure they are registered with SQLAlchemy
 from db import models
 
+from fastapi.middleware.cors import CORSMiddleware
+
+
+
 app = FastAPI(
     title=settings.PROJECT_NAME,
     openapi_url=f"{settings.API_V1_STR}/openapi.json"
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:8080"],  # frontend URL(s)
+    allow_credentials=True,
+    allow_methods=["*"],  # GET, POST, PUT, DELETE, etc.
+    allow_headers=["*"],
 )
 
 app.include_router(api_router, prefix=settings.API_V1_STR)

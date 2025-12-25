@@ -21,11 +21,11 @@ async def create_user(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_db)
 ):
-    user = await crud_user.get_by_email(db, email=user_in.email)
+    user = await crud_user.get_by_phone(db, phone=user_in.phone)
     if user:
         raise HTTPException(
             status_code=400,
-            detail="The user with this email already exists in the system.",
+            detail="The user with this phone already exists in the system.",
         )
     return await crud_user.create(db, obj_in=user_in)
 
@@ -35,6 +35,16 @@ async def read_user(
     db: AsyncSession = Depends(get_db)
 ):
     user = await crud_user.get(db, id=user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+@router.get("/phone/{phone}", response_model=User)
+async def read_user_by_phone(
+    phone: str,
+    db: AsyncSession = Depends(get_db)
+):
+    user = await crud_user.get_by_phone(db, phone=phone)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return user
