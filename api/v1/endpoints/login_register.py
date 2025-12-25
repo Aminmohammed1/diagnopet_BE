@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from db.session import get_db
@@ -13,6 +13,11 @@ from crud import crud_otp
 import random
 from utils.send_whatsapp_msg import send_message_via_twilio_sms
 from schemas.verify_otp import VerifyOtpRequest
+from api.deps import get_current_admin_or_staff_user
+from fastapi.security import OAuth2PasswordBearer
+from jose import jwt, JWTError
+from pydantic import ValidationError
+from schemas.token import TokenPayload
 
 router = APIRouter()
 
@@ -106,3 +111,54 @@ async def verify_otp(payload: VerifyOtpRequest, db: AsyncSession = Depends(get_d
         data={"sub": str(user.id)}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
+
+@router.get("/validate-token")
+async def validate_token(
+    token: str,
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Validate JWT token and check if user has admin or staff role.
+    Returns user info if valid and has required role.
+    """
+    try:
+        # Decode JWT token
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        token_data = TokenPayload(**payload)
+    except (JWTError, ValidationError):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Invalid or expired token",
+        )
+    
+    # Get user from database
+    user = await crud_user.get(db, id=token_data.sub)
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found",
+        )
+    
+    if not user.is_active:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Inactive user",
+        )
+    
+    # Check if user has admin or staff role
+    if user.role not in ["ADMIN", "STAFF"] and not user.is_superuser:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User doesn't have admin or staff privileges",
+        )
+    
+    return {
+        "valid": True,
+        "user_id": user.id,
+        "role": user.role,
+        "is_superuser": user.is_superuser,
+        "full_name": user.full_name,
+        "email": user.email
+    }

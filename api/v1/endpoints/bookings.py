@@ -1,11 +1,15 @@
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.future import select
 from api import deps
-from crud import crud_booking
-from schemas.booking import Booking, BookingCreate, BookingUpdate
+from crud import crud_booking, crud_user
+from schemas.booking import Booking, BookingCreate, BookingUpdate, PhoneLookupRequest
 from db.session import get_db
 from db.models.user import User
+from db.models.booking import Booking as BookingModel
+from db.models.booking_item import BookingItem as BookingItemModel
+from db.models.test import Test
 
 router = APIRouter()
 
@@ -19,7 +23,7 @@ async def read_bookings(
     """
     Retrieve bookings.
     """
-    if current_user.is_superuser:
+    if current_user.is_superuser or current_user.role == "ADMIN" or current_user.role == "STAFF":
         bookings = await crud_booking.get_multi(db, skip=skip, limit=limit)
     else:
         bookings = await crud_booking.get_multi_by_user(
@@ -75,3 +79,63 @@ async def update_booking(
         raise HTTPException(status_code=400, detail="Not enough permissions")
     booking = await crud_booking.update(db=db, db_obj=booking, obj_in=booking_in)
     return booking
+
+@router.post("/lookup-by-phone", response_model=List[Booking])
+async def get_bookings_by_phone(
+    *,
+    db: AsyncSession = Depends(get_db),
+    phone_request: PhoneLookupRequest,
+    current_user: User = Depends(deps.get_current_admin_or_staff_user),
+) -> Any:
+    """
+    Get all bookings for a user by phone number (admin/staff/superuser only).
+    """
+    # Find user by phone number
+    user = await crud_user.get_by_phone(db=db, phone=phone_request.phone)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found with this phone number")
+    
+    # Get all bookings for this user with test names
+    result = await db.execute(
+        select(BookingModel)
+        .filter(BookingModel.user_id == user.id)
+        .order_by(BookingModel.created_at.desc())
+    )
+    bookings = result.scalars().all()
+    
+    # Manually construct the response with test names
+    booking_responses = []
+    for booking in bookings:
+        # Get booking items with test names
+        if booking.status == "done":
+            continue
+        items_result = await db.execute(
+            select(BookingItemModel, Test.name)
+            .join(Test, BookingItemModel.test_id == Test.id)
+            .filter(BookingItemModel.booking_id == booking.id)
+        )
+        items_with_names = items_result.all()
+        
+        # Construct booking response
+        booking_dict = {
+            "id": booking.id,
+            "user_id": booking.user_id,
+            "booking_date": booking.booking_date,
+            "status": booking.status,
+            "address": booking.address,
+            "address_link": booking.address_link,
+            "created_at": booking.created_at,
+            "updated_at": booking.updated_at,
+            "items": [
+                {
+                    "id": item.id,
+                    "booking_id": item.booking_id,
+                    "test_id": item.test_id,
+                    "test_name": test_name
+                }
+                for item, test_name in items_with_names
+            ]
+        }
+        booking_responses.append(Booking(**booking_dict))
+    
+    return booking_responses

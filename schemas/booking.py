@@ -11,6 +11,7 @@ class BookingItemCreate(BookingItemBase):
 class BookingItem(BookingItemBase):
     id: int
     booking_id: int
+    test_name: Optional[str] = None
 
     class Config:
         from_attributes = True
@@ -42,3 +43,6 @@ class BookingInDBBase(BookingBase):
 
 class Booking(BookingInDBBase):
     pass
+
+class PhoneLookupRequest(BaseModel):
+    phone: str
