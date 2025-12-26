@@ -13,7 +13,7 @@ from db.models.user import User
 
 @router.post("/upload-report")
 async def upload_report(
-    user_id: int = Form(...),
+    # user_id: int = Form(...),
     appointment_id: int = Form(...),
     phone_number: str = Form(...),
     file: UploadFile = File(...),
@@ -39,7 +39,7 @@ async def upload_report(
         # 2. Generate unique filename
         file_id = str(uuid.uuid4())
         storage_path = (
-            f"user_{user_id}/"
+            f"phonenumber_{phone_number}/"
             f"appointment_{appointment_id}/"
             f"report_{file_id}.pdf"
         )
