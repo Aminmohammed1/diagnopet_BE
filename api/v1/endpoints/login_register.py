@@ -55,24 +55,22 @@ async def send_otp(phone: str, db: AsyncSession = Depends(get_db)):
             detail="Too many OTP requests. Please try again after 6 hours."
         )
     
-    # Generate 6-digit OTP
-    otp_code = f"{random.randint(100000, 999999)}"
+    # # Original OTP generation and Twilio code (commented out to save credits)
+    # otp_code = f"{random.randint(100000, 999999)}"
+    # await crud_otp.create_otp(db, phone=phone, otp_code=otp_code, expires_in_minutes=10)
+    # try:
+    #     send_message_via_twilio_sms(
+    #         body=f"Your Diagnopet OTP is {otp_code}. Valid for 10 minutes.",
+    #         to=phone
+    #     )
+    # except Exception as e:
+    #     raise HTTPException(status_code=500, detail=f"Failed to send OTP: {str(e)}")
     
-    # Save OTP to DB (valid for 10 mins)
+    # Hardcoded OTP for testing (000000)
+    otp_code = "000000"
     await crud_otp.create_otp(db, phone=phone, otp_code=otp_code, expires_in_minutes=10)
     
-    # Send OTP via Twilio
-    try:
-        send_message_via_twilio_sms(
-            body=f"Your Diagnopet OTP is {otp_code}. Valid for 10 minutes.",
-            to=phone
-        )
-    except Exception as e:
-        # In a real app, you might want to log this and maybe not fail if DB part succeeded
-        # but for now let's raise error if sending fails
-        raise HTTPException(status_code=500, detail=f"Failed to send OTP: {str(e)}")
-        
-    return {"message": "OTP sent successfully"}
+    return {"message": "OTP sent successfully (test mode: 000000)"}
 
 @router.post("/verify-otp", response_model=Token)
 async def verify_otp(payload: VerifyOtpRequest, db: AsyncSession = Depends(get_db)):
