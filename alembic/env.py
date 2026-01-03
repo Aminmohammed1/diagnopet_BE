@@ -5,6 +5,8 @@ from sqlalchemy import pool
 
 from alembic import context
 import sys
+import db.models  # 👈 THIS LINE IS THE FIX
+
 from pathlib import Path
 
 # Add the project root to the path
@@ -29,15 +31,15 @@ target_metadata = Base.metadata
 # Get the database URL from settings
 def get_db_url():
     try:
-        db_url = settings.DATABASE_URL or "sqlite:///./test.db"
-        # Convert async driver to sync for Alembic
-        if "asyncpg://" in db_url:
-            db_url = db_url.replace("asyncpg://", "postgresql://")
-        if "asyncmy://" in db_url:
-            db_url = db_url.replace("asyncmy://", "mysql+pymysql://")
-        return db_url
+        # db_url = settings.DATABASE_URL or "sqlite:///./test.db"
+        # # Convert async driver to sync for Alembic
+        # if "asyncpg://" in db_url:
+        #     db_url = db_url.replace("asyncpg://", "postgresql://")
+        # if "asyncmy://" in db_url:
+        #     db_url = db_url.replace("asyncmy://", "mysql+pymysql://")
+        return "postgresql://postgres:Diagnopet#55@db.qvgnhzuqchglxwhhspnr.supabase.co:5432/postgres"
     except Exception:
-        return "sqlite:///./test.db"
+        return "postgresql://postgres:Diagnopet#55@db.qvgnhzuqchglxwhhspnr.supabase.co:5432/postgres"
 
 # other values from the config, defined by the needs of env.py,
 # can be acquired:
@@ -46,18 +48,7 @@ def get_db_url():
 
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    url = config.get_main_option("sqlalchemy.url") or get_db_url()
+    url = get_db_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -69,19 +60,20 @@ def run_migrations_offline() -> None:
         context.run_migrations()
 
 
+
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode.
+    """Run migrations in 'online' mode using Supabase PostgreSQL."""
 
-    In this scenario we need to create an Engine
-    and associate a connection with the context.
+    # Get DB URL (force sync driver for Alembic)
+    db_url = get_db_url()
 
-    """
-    # Use SQLite for migrations (development)
-    db_url = "sqlite:///./test.db"
-    
+    # If someone accidentally passed async URL, fix it
+    if db_url.startswith("postgresql+asyncpg://"):
+        db_url = db_url.replace("postgresql+asyncpg://", "postgresql://")
+
     configuration = config.get_section(config.config_ini_section, {})
     configuration["sqlalchemy.url"] = db_url
-    
+
     connectable = engine_from_config(
         configuration,
         prefix="sqlalchemy.",
@@ -90,7 +82,10 @@ def run_migrations_online() -> None:
 
     with connectable.connect() as connection:
         context.configure(
-            connection=connection, target_metadata=target_metadata
+            connection=connection,
+            target_metadata=target_metadata,
+            compare_type=True,
+            compare_server_default=True,
         )
 
         with context.begin_transaction():
