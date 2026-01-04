@@ -1,5 +1,7 @@
 from pydantic import BaseModel, EmailStr
-from typing import Optional
+from typing import Optional, List
+from schemas.pet import Pet
+from schemas.pet import PetCreateBase
 
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
@@ -9,6 +11,7 @@ class UserBase(BaseModel):
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
     role: Optional[str] = "USER"
+    pets: Optional[List[PetCreateBase]] = None
 
 
 class UserCreate(UserBase):
@@ -31,4 +34,4 @@ class UserInDBBase(UserBase):
         from_attributes = True
 
 class User(UserInDBBase):
-    pass
+    pets: List[Pet] = []

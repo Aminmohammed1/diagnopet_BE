@@ -1,0 +1,707 @@
+nohup: ignoring input
+INFO:     Will watch for changes in these directories: ['/home/mohammed-amin/sideProjects/diagnopet_backend']
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     Started reloader process [133648] using StatReload
+INFO:     Started server process [133656]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-01-04 15:00:22,729 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-01-04 15:00:22,729 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:00:22,783 INFO sqlalchemy.engine.Engine select current_schema()
+2026-01-04 15:00:22,783 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:00:22,853 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-01-04 15:00:22,853 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:00:22,907 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:00:22,993 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.phone = $1::VARCHAR
+2026-01-04 15:00:22,993 INFO sqlalchemy.engine.Engine [generated in 0.00018s] ('+917777730843',)
+2026-01-04 15:00:23,274 INFO sqlalchemy.engine.Engine INSERT INTO users (phone, email, hashed_password, full_name, is_active, is_superuser, is_verified, role, last_login, login_attempts, is_locked) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR, $9::TIMESTAMP WITH TIME ZONE, $10::INTEGER, $11::BOOLEAN) RETURNING users.id
+2026-01-04 15:00:23,274 INFO sqlalchemy.engine.Engine [generated in 0.00024s] ('+917777730843', 'debug_079cxd@example.com', '$2b$12$3DD/vlXuI60VdBFIXizzd.NuL9SPwPHKGpIpbxDIvxaTGMFvzTQVS', 'Debug User', True, False, False, 'USER', None, 0, False)
+2026-01-04 15:00:23,310 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-04 15:00:23,329 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:00:23,330 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-01-04 15:00:23,330 INFO sqlalchemy.engine.Engine [generated in 0.00012s] (20,)
+2026-01-04 15:00:23,386 INFO sqlalchemy.engine.Engine SELECT pets.id AS pets_id, pets.user_id AS pets_user_id, pets.name AS pets_name, pets.species AS pets_species, pets.breed AS pets_breed, pets.age_years AS pets_age_years, pets.weight_kg AS pets_weight_kg, pets.medical_history AS pets_medical_history, pets.is_active AS pets_is_active, pets.created_at AS pets_created_at, pets.updated_at AS pets_updated_at 
+FROM pets 
+WHERE $1::INTEGER = pets.user_id
+2026-01-04 15:00:23,386 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (20,)
+2026-01-04 15:00:23,386 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:47084 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 85, in __call__
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 448, in app
+    content = await serialize_response(
+              ^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 274, in serialize_response
+    raise ResponseValidationError(
+fastapi.exceptions.ResponseValidationError: 1 validation error:
+  {'type': 'get_attribute_error', 'loc': ('response', 'pets'), 'msg': "Error extracting attribute: MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)", 'input': <db.models.user.User object at 0x7ab9ad1d7440>, 'ctx': {'error': "MissingGreenlet: greenlet_spawn has not been called; can't call await_only() here. Was IO attempted in an unexpected place? (Background on this error at: https://sqlalche.me/e/20/xd2s)"}}
+
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 27, in create_user
+    POST /api/v1/users/
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [133656]
+INFO:     Started server process [133855]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [133855]
+INFO:     Started server process [133944]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-01-04 15:01:15,662 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-01-04 15:01:15,662 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:01:15,712 INFO sqlalchemy.engine.Engine select current_schema()
+2026-01-04 15:01:15,712 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:01:15,780 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-01-04 15:01:15,780 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:01:15,832 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:15,835 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.phone = $1::VARCHAR
+2026-01-04 15:01:15,835 INFO sqlalchemy.engine.Engine [generated in 0.00014s] ('+918888811301',)
+2026-01-04 15:01:16,099 INFO sqlalchemy.engine.Engine INSERT INTO users (phone, email, hashed_password, full_name, is_active, is_superuser, is_verified, role, last_login, login_attempts, is_locked) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR, $9::TIMESTAMP WITH TIME ZONE, $10::INTEGER, $11::BOOLEAN) RETURNING users.id
+2026-01-04 15:01:16,099 INFO sqlalchemy.engine.Engine [generated in 0.00020s] ('+918888811301', 'api_test_kf6ne7@example.com', '$2b$12$ZZ4qdXkmaY6fKBCPyzVG5ez.sejKZbDjQ9yqrNThypBwHraxI6OkO', 'API Test User', True, False, False, 'USER', None, 0, False)
+2026-01-04 15:01:16,134 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-04 15:01:16,152 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,153 INFO sqlalchemy.engine.Engine SELECT users.id 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-01-04 15:01:16,153 INFO sqlalchemy.engine.Engine [generated in 0.00011s] (21,)
+2026-01-04 15:01:16,206 INFO sqlalchemy.engine.Engine SELECT pets.id AS pets_id, pets.user_id AS pets_user_id, pets.name AS pets_name, pets.species AS pets_species, pets.breed AS pets_breed, pets.age_years AS pets_age_years, pets.weight_kg AS pets_weight_kg, pets.medical_history AS pets_medical_history, pets.is_active AS pets_is_active, pets.created_at AS pets_created_at, pets.updated_at AS pets_updated_at 
+FROM pets 
+WHERE $1::INTEGER = pets.user_id
+2026-01-04 15:01:16,206 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (21,)
+INFO:     127.0.0.1:42080 - "POST /api/v1/users/ HTTP/1.1" 200 OK
+2026-01-04 15:01:16,247 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:16,409 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,410 INFO sqlalchemy.engine.Engine INSERT INTO pets (user_id, name, species, breed, age_years, weight_kg, medical_history, is_active) VALUES ($1::INTEGER, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::FLOAT, $6::FLOAT, $7::VARCHAR, $8::BOOLEAN) RETURNING pets.id, pets.created_at, pets.updated_at
+2026-01-04 15:01:16,410 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (21, 'Max', 'Cat', 'Siamese', 2.0, 4.5, 'None', True)
+2026-01-04 15:01:16,478 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-04 15:01:16,497 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,498 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:16,498 INFO sqlalchemy.engine.Engine [generated in 0.00020s] (2,)
+INFO:     127.0.0.1:42080 - "POST /api/v1/pets/ HTTP/1.1" 200 OK
+2026-01-04 15:01:16,550 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:16,593 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,593 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:16,593 INFO sqlalchemy.engine.Engine [generated in 0.00013s] (2,)
+INFO:     127.0.0.1:42080 - "GET /api/v1/pets/2 HTTP/1.1" 200 OK
+2026-01-04 15:01:16,647 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:16,691 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,692 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.user_id = $1::INTEGER 
+ LIMIT $2::INTEGER OFFSET $3::INTEGER
+2026-01-04 15:01:16,692 INFO sqlalchemy.engine.Engine [generated in 0.00015s] (21, 100, 0)
+INFO:     127.0.0.1:42080 - "GET /api/v1/pets/?user_id=21 HTTP/1.1" 200 OK
+2026-01-04 15:01:16,746 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:16,788 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,789 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-01-04 15:01:16,789 INFO sqlalchemy.engine.Engine [generated in 0.00018s] (21,)
+2026-01-04 15:01:16,846 INFO sqlalchemy.engine.Engine SELECT pets.user_id AS pets_user_id, pets.id AS pets_id, pets.name AS pets_name, pets.species AS pets_species, pets.breed AS pets_breed, pets.age_years AS pets_age_years, pets.weight_kg AS pets_weight_kg, pets.medical_history AS pets_medical_history, pets.is_active AS pets_is_active, pets.created_at AS pets_created_at, pets.updated_at AS pets_updated_at 
+FROM pets 
+WHERE pets.user_id IN ($1::INTEGER)
+2026-01-04 15:01:16,846 INFO sqlalchemy.engine.Engine [generated in 0.00019s] (21,)
+INFO:     127.0.0.1:42080 - "GET /api/v1/users/21 HTTP/1.1" 200 OK
+2026-01-04 15:01:16,886 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:16,928 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:16,929 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:16,929 INFO sqlalchemy.engine.Engine [cached since 0.3354s ago] (2,)
+2026-01-04 15:01:16,962 INFO sqlalchemy.engine.Engine UPDATE pets SET name=$1::VARCHAR, weight_kg=$2::FLOAT, updated_at=now() WHERE pets.id = $3::INTEGER
+2026-01-04 15:01:16,962 INFO sqlalchemy.engine.Engine [generated in 0.00016s] ('Max Updated', 5.0, 2)
+2026-01-04 15:01:17,000 INFO sqlalchemy.engine.Engine COMMIT
+2026-01-04 15:01:17,017 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:17,017 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:17,017 INFO sqlalchemy.engine.Engine [cached since 0.5192s ago] (2,)
+INFO:     127.0.0.1:42080 - "PUT /api/v1/pets/2 HTTP/1.1" 200 OK
+2026-01-04 15:01:17,054 INFO sqlalchemy.engine.Engine ROLLBACK
+2026-01-04 15:01:17,097 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:17,097 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:17,097 INFO sqlalchemy.engine.Engine [cached since 0.5041s ago] (2,)
+2026-01-04 15:01:17,132 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:17,132 INFO sqlalchemy.engine.Engine [cached since 0.5386s ago] (2,)
+2026-01-04 15:01:17,151 INFO sqlalchemy.engine.Engine SELECT bookings.id AS bookings_id, bookings.user_id AS bookings_user_id, bookings.pet_id AS bookings_pet_id, bookings.collection_staff_id AS bookings_collection_staff_id, bookings.booking_date AS bookings_booking_date, bookings.status AS bookings_status, bookings.address AS bookings_address, bookings.address_link AS bookings_address_link, bookings.notes AS bookings_notes, bookings.estimated_distance_km AS bookings_estimated_distance_km, bookings.created_at AS bookings_created_at, bookings.updated_at AS bookings_updated_at 
+FROM bookings 
+WHERE $1::INTEGER = bookings.pet_id
+2026-01-04 15:01:17,151 INFO sqlalchemy.engine.Engine [generated in 0.00030s] (2,)
+2026-01-04 15:01:17,196 INFO sqlalchemy.engine.Engine SELECT test_reports.id AS test_reports_id, test_reports.booking_item_id AS test_reports_booking_item_id, test_reports.pet_id AS test_reports_pet_id, test_reports.test_id AS test_reports_test_id, test_reports.batch_group_id AS test_reports_batch_group_id, test_reports.report_file_url AS test_reports_report_file_url, test_reports.findings AS test_reports_findings, test_reports.status AS test_reports_status, test_reports.created_at AS test_reports_created_at, test_reports.generated_at AS test_reports_generated_at, test_reports.delivered_at AS test_reports_delivered_at, test_reports.updated_at AS test_reports_updated_at 
+FROM test_reports 
+WHERE $1::INTEGER = test_reports.pet_id
+2026-01-04 15:01:17,196 INFO sqlalchemy.engine.Engine [generated in 0.00019s] (2,)
+2026-01-04 15:01:17,239 INFO sqlalchemy.engine.Engine DELETE FROM pets WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:17,239 INFO sqlalchemy.engine.Engine [generated in 0.00024s] (2,)
+2026-01-04 15:01:17,276 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     127.0.0.1:42080 - "DELETE /api/v1/pets/2 HTTP/1.1" 200 OK
+2026-01-04 15:01:17,337 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:17,337 INFO sqlalchemy.engine.Engine SELECT pets.id, pets.user_id, pets.name, pets.species, pets.breed, pets.age_years, pets.weight_kg, pets.medical_history, pets.is_active, pets.created_at, pets.updated_at 
+FROM pets 
+WHERE pets.id = $1::INTEGER
+2026-01-04 15:01:17,337 INFO sqlalchemy.engine.Engine [cached since 0.7441s ago] (2,)
+2026-01-04 15:01:17,374 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:42080 - "GET /api/v1/pets/2 HTTP/1.1" 404 Not Found
+2026-01-04 15:01:17,434 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:01:17,434 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-01-04 15:01:17,434 INFO sqlalchemy.engine.Engine [cached since 0.6452s ago] (21,)
+2026-01-04 15:01:17,487 INFO sqlalchemy.engine.Engine SELECT pets.user_id AS pets_user_id, pets.id AS pets_id, pets.name AS pets_name, pets.species AS pets_species, pets.breed AS pets_breed, pets.age_years AS pets_age_years, pets.weight_kg AS pets_weight_kg, pets.medical_history AS pets_medical_history, pets.is_active AS pets_is_active, pets.created_at AS pets_created_at, pets.updated_at AS pets_updated_at 
+FROM pets 
+WHERE pets.user_id IN ($1::INTEGER)
+2026-01-04 15:01:17,487 INFO sqlalchemy.engine.Engine [cached since 0.6406s ago] (21,)
+2026-01-04 15:01:17,522 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.id = $1::INTEGER
+2026-01-04 15:01:17,522 INFO sqlalchemy.engine.Engine [cached since 0.733s ago] (21,)
+2026-01-04 15:01:17,540 INFO sqlalchemy.engine.Engine SELECT pets.user_id AS pets_user_id, pets.id AS pets_id, pets.name AS pets_name, pets.species AS pets_species, pets.breed AS pets_breed, pets.age_years AS pets_age_years, pets.weight_kg AS pets_weight_kg, pets.medical_history AS pets_medical_history, pets.is_active AS pets_is_active, pets.created_at AS pets_created_at, pets.updated_at AS pets_updated_at 
+FROM pets 
+WHERE pets.user_id IN ($1::INTEGER)
+2026-01-04 15:01:17,540 INFO sqlalchemy.engine.Engine [cached since 0.6941s ago] (21,)
+2026-01-04 15:01:17,559 INFO sqlalchemy.engine.Engine SELECT addresses.id AS addresses_id, addresses.user_id AS addresses_user_id, addresses.address_line1 AS addresses_address_line1, addresses.address_line2 AS addresses_address_line2, addresses.city AS addresses_city, addresses.state AS addresses_state, addresses.postal_code AS addresses_postal_code, addresses.country AS addresses_country, addresses.google_maps_link AS addresses_google_maps_link, addresses.is_default AS addresses_is_default 
+FROM addresses 
+WHERE $1::INTEGER = addresses.user_id
+2026-01-04 15:01:17,559 INFO sqlalchemy.engine.Engine [generated in 0.00016s] (21,)
+2026-01-04 15:01:17,597 INFO sqlalchemy.engine.Engine SELECT bookings.id AS bookings_id, bookings.user_id AS bookings_user_id, bookings.pet_id AS bookings_pet_id, bookings.collection_staff_id AS bookings_collection_staff_id, bookings.booking_date AS bookings_booking_date, bookings.status AS bookings_status, bookings.address AS bookings_address, bookings.address_link AS bookings_address_link, bookings.notes AS bookings_notes, bookings.estimated_distance_km AS bookings_estimated_distance_km, bookings.created_at AS bookings_created_at, bookings.updated_at AS bookings_updated_at 
+FROM bookings 
+WHERE $1::INTEGER = bookings.user_id
+2026-01-04 15:01:17,597 INFO sqlalchemy.engine.Engine [generated in 0.00017s] (21,)
+2026-01-04 15:01:17,635 INFO sqlalchemy.engine.Engine DELETE FROM users WHERE users.id = $1::INTEGER
+2026-01-04 15:01:17,635 INFO sqlalchemy.engine.Engine [generated in 0.00031s] (21,)
+2026-01-04 15:01:17,675 INFO sqlalchemy.engine.Engine COMMIT
+INFO:     127.0.0.1:42080 - "DELETE /api/v1/users/21 HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44362 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:44362 - "GET /api/v1/openapi.json HTTP/1.1" 200 OK
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [133944]
+Process SpawnProcess-4:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/main.py", line 3, in <module>
+    from api.v1.api import api_router
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/api.py", line 2, in <module>
+    from api.v1.endpoints import tests, users, login_register, bookings, reports, addresses, pets
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 5, in <module>
+    from schemas.user import User, UserCreate, UserUpdate
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 5, in <module>
+    class UserBase(BaseModel):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 13, in UserBase
+    pets: Optional[List[PetCreateBase]] = None
+                        ^^^^^^^^^^^^^
+NameError: name 'PetCreateBase' is not defined
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+Process SpawnProcess-5:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/main.py", line 3, in <module>
+    from api.v1.api import api_router
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/api.py", line 2, in <module>
+    from api.v1.endpoints import tests, users, login_register, bookings, reports, addresses, pets
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 5, in <module>
+    from schemas.user import User, UserCreate, UserUpdate
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 4
+    from 
+         ^
+SyntaxError: invalid syntax
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+Process SpawnProcess-6:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/main.py", line 3, in <module>
+    from api.v1.api import api_router
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/api.py", line 2, in <module>
+    from api.v1.endpoints import tests, users, login_register, bookings, reports, addresses, pets
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 5, in <module>
+    from schemas.user import User, UserCreate, UserUpdate
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 4, in <module>
+    from schemas.pet import PetCreateBase
+ImportError: cannot import name 'PetCreateBase' from 'schemas.pet' (/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/pet.py)
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+Process SpawnProcess-7:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/main.py", line 3, in <module>
+    from api.v1.api import api_router
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/api.py", line 2, in <module>
+    from api.v1.endpoints import tests, users, login_register, bookings, reports, addresses, pets
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 5, in <module>
+    from schemas.user import User, UserCreate, UserUpdate
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 6, in <module>
+    class UserBase(BaseModel):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 14, in UserBase
+    pets: Optional[List[PetCreateBase]] = None
+                        ^^^^^^^^^^^^^
+NameError: name 'PetCreateBase' is not defined. Did you mean: 'PetCreate'?
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+INFO:     Started server process [135030]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'schemas/pet.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135030]
+INFO:     Started server process [135110]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'schemas/pet.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135110]
+INFO:     Started server process [135113]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135113]
+Process SpawnProcess-11:
+Traceback (most recent call last):
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 314, in _bootstrap
+    self.run()
+  File "/usr/lib/python3.12/multiprocessing/process.py", line 108, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/_subprocess.py", line 80, in subprocess_started
+    target(sockets=sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 67, in run
+    return asyncio_run(self.serve(sockets=sockets), loop_factory=self.config.get_loop_factory())
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 194, in run
+    return runner.run(main)
+           ^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/runners.py", line 118, in run
+    return self._loop.run_until_complete(task)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/asyncio/base_events.py", line 687, in run_until_complete
+    return future.result()
+           ^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 71, in serve
+    await self._serve(sockets)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/server.py", line 78, in _serve
+    config.load()
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/config.py", line 439, in load
+    self.loaded_app = import_from_string(self.app)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/importer.py", line 19, in import_from_string
+    module = importlib.import_module(module_str)
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/usr/lib/python3.12/importlib/__init__.py", line 90, in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "<frozen importlib._bootstrap>", line 1387, in _gcd_import
+  File "<frozen importlib._bootstrap>", line 1360, in _find_and_load
+  File "<frozen importlib._bootstrap>", line 1331, in _find_and_load_unlocked
+  File "<frozen importlib._bootstrap>", line 935, in _load_unlocked
+  File "<frozen importlib._bootstrap_external>", line 995, in exec_module
+  File "<frozen importlib._bootstrap>", line 488, in _call_with_frames_removed
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/main.py", line 3, in <module>
+    from api.v1.api import api_router
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/api.py", line 2, in <module>
+    from api.v1.endpoints import tests, users, login_register, bookings, reports, addresses, pets
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 5, in <module>
+    from schemas.user import User, UserCreate, UserUpdate
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 6, in <module>
+    class UserBase(BaseModel):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/schemas/user.py", line 14, in UserBase
+    pets: Optional[List[PetCreate]] = None
+                        ^^^^^^^^^
+NameError: name 'PetCreate' is not defined. Did you mean: 'PetCreateBase'?
+WARNING:  StatReload detected changes in 'schemas/user.py'. Reloading...
+INFO:     Started server process [135155]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135155]
+INFO:     Started server process [135430]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135430]
+INFO:     Started server process [135435]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     127.0.0.1:38150 - "POST /api/v1/users/ HTTP/1.1" 422 Unprocessable Entity
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135435]
+INFO:     Started server process [135540]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+WARNING:  StatReload detected changes in 'crud/crud_user.py'. Reloading...
+INFO:     Shutting down
+INFO:     Waiting for application shutdown.
+INFO:     Application shutdown complete.
+INFO:     Finished server process [135540]
+INFO:     Started server process [135552]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+2026-01-04 15:25:47,715 INFO sqlalchemy.engine.Engine select pg_catalog.version()
+2026-01-04 15:25:47,715 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:25:47,792 INFO sqlalchemy.engine.Engine select current_schema()
+2026-01-04 15:25:47,792 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:25:47,947 INFO sqlalchemy.engine.Engine show standard_conforming_strings
+2026-01-04 15:25:47,947 INFO sqlalchemy.engine.Engine [raw sql] ()
+2026-01-04 15:25:48,126 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:25:48,129 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.phone = $1::VARCHAR
+2026-01-04 15:25:48,129 INFO sqlalchemy.engine.Engine [generated in 0.00019s] ('9876543210',)
+2026-01-04 15:25:48,550 INFO sqlalchemy.engine.Engine INSERT INTO users (phone, email, hashed_password, full_name, is_active, is_superuser, is_verified, role, last_login, login_attempts, is_locked) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR, $9::TIMESTAMP WITH TIME ZONE, $10::INTEGER, $11::BOOLEAN) RETURNING users.id
+2026-01-04 15:25:48,550 INFO sqlalchemy.engine.Engine [generated in 0.00029s] ('9876543210', 'amin@example.com', '$2b$12$kxQ09T.Yo8tSaBimg2kYBu39a0ChK/i4GLjXPXf6E2v200w59akQG', 'Amin', True, False, False, 'user', None, 0, False)
+2026-01-04 15:25:48,742 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:58402 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/crud/crud_user.py", line 68, in create
+    pet = Pet(
+          ^^^
+NameError: name 'Pet' is not defined. Did you mean: 'get'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 38, in create_user
+    return await crud_user.create(db, obj_in=user_in)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/crud/crud_user.py", line 79, in create
+    except SQLAlchemyError:
+           ^^^^^^^^^^^^^^^
+NameError: name 'SQLAlchemyError' is not defined
+2026-01-04 15:27:12,452 INFO sqlalchemy.engine.Engine BEGIN (implicit)
+2026-01-04 15:27:12,452 INFO sqlalchemy.engine.Engine SELECT users.id, users.phone, users.email, users.hashed_password, users.full_name, users.is_active, users.is_superuser, users.is_verified, users.role, users.last_login, users.login_attempts, users.is_locked 
+FROM users 
+WHERE users.phone = $1::VARCHAR
+2026-01-04 15:27:12,452 INFO sqlalchemy.engine.Engine [cached since 84.32s ago] ('9876543210',)
+2026-01-04 15:27:12,799 INFO sqlalchemy.engine.Engine INSERT INTO users (phone, email, hashed_password, full_name, is_active, is_superuser, is_verified, role, last_login, login_attempts, is_locked) VALUES ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::BOOLEAN, $7::BOOLEAN, $8::VARCHAR, $9::TIMESTAMP WITH TIME ZONE, $10::INTEGER, $11::BOOLEAN) RETURNING users.id
+2026-01-04 15:27:12,799 INFO sqlalchemy.engine.Engine [cached since 84.25s ago] ('9876543210', 'amin@example.com', '$2b$12$P/S2OkTfYbcl9X1eLV1rle28gEnjU05wDUKj46/LKzauZtNiDnw9m', 'Amin', True, False, False, 'user', None, 0, False)
+2026-01-04 15:27:12,888 INFO sqlalchemy.engine.Engine ROLLBACK
+INFO:     127.0.0.1:50968 - "POST /api/v1/users/ HTTP/1.1" 500 Internal Server Error
+ERROR:    Exception in ASGI application
+Traceback (most recent call last):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/crud/crud_user.py", line 68, in create
+    pet = Pet(
+          ^^^
+NameError: name 'Pet' is not defined. Did you mean: 'get'?
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/protocols/http/h11_impl.py", line 410, in run_asgi
+    result = await app(  # type: ignore[func-returns-value]
+             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/uvicorn/middleware/proxy_headers.py", line 60, in __call__
+    return await self.app(scope, receive, send)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/applications.py", line 1135, in __call__
+    await super().__call__(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/applications.py", line 107, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 186, in __call__
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/errors.py", line 164, in __call__
+    await self.app(scope, receive, _send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 93, in __call__
+    await self.simple_response(scope, receive, send, request_headers=headers)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/cors.py", line 144, in simple_response
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/middleware/exceptions.py", line 63, in __call__
+    await wrap_app_handling_exceptions(self.app, conn)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/middleware/asyncexitstack.py", line 18, in __call__
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 716, in __call__
+    await self.middleware_stack(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 736, in app
+    await route.handle(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/routing.py", line 290, in handle
+    await self.app(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 119, in app
+    await wrap_app_handling_exceptions(app, request)(scope, receive, send)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 53, in wrapped_app
+    raise exc
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/starlette/_exception_handler.py", line 42, in wrapped_app
+    await app(scope, receive, sender)
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 105, in app
+    response = await f(request)
+               ^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 426, in app
+    raw_response = await run_endpoint_function(
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/venv/lib/python3.12/site-packages/fastapi/routing.py", line 312, in run_endpoint_function
+    return await dependant.call(**values)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/api/v1/endpoints/users.py", line 38, in create_user
+    return await crud_user.create(db, obj_in=user_in)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/mohammed-amin/sideProjects/diagnopet_backend/crud/crud_user.py", line 79, in create
+    except SQLAlchemyError:
+           ^^^^^^^^^^^^^^^
+NameError: name 'SQLAlchemyError' is not defined
