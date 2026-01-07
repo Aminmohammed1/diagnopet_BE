@@ -2,31 +2,49 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from db.session import get_db
-from schemas.address import Address, AddressCreate, AddressUpdate
+from db.models.user import User
+from schemas.address import Address, AddressUpdate
 from crud import crud_address
+from api import deps
 
 router = APIRouter()
 
-@router.post("/", response_model=Address)
-async def create_address(
-    address_in: AddressCreate,
-    db: AsyncSession = Depends(get_db)
-):
-    return await crud_address.create(db, obj_in=address_in)
+# @router.post("/", response_model=Address)
+# async def create_address(
+#     address_in: AddressBase,
+#     db: AsyncSession = Depends(get_db),
+#     current_user: User = Depends(deps.get_current_active_user),
+# ):
+#     """
+#     Create a new address for the authenticated user.
+#     User identity is derived from JWT, not request body.
+#     """
+
+#     return await crud_address.create(
+#         db=db,
+#         obj_in=address_in,
+#         user_id=current_user.id
+#     )
+
 
 @router.get("/user/{user_id}", response_model=List[Address])
 async def read_addresses_by_user(
     user_id: int,
     skip: int = 0,
     limit: int = 100,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
 ):
+    # Users can only view their own addresses, admins can view any
+    if current_user.id != user_id and not current_user.is_superuser and current_user.role != "ADMIN":
+        raise HTTPException(status_code=403, detail="Not authorized to view these addresses")
     return await crud_address.get_multi_by_user(db, user_id=user_id, skip=skip, limit=limit)
 
 @router.get("/{address_id}", response_model=Address)
 async def read_address(
     address_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     address = await crud_address.get(db, id=address_id)
     if not address:
@@ -37,7 +55,8 @@ async def read_address(
 async def update_address(
     address_id: int,
     address_in: AddressUpdate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     address = await crud_address.get(db, id=address_id)
     if not address:
@@ -47,7 +66,8 @@ async def update_address(
 @router.delete("/{address_id}", response_model=Address)
 async def delete_address(
     address_id: int,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
 ):
     address = await crud_address.get(db, id=address_id)
     if not address:

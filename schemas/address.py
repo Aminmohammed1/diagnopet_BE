@@ -11,8 +11,13 @@ class AddressBase(BaseModel):
     google_maps_link: Optional[str] = None
     is_default: bool = False
 
-class AddressCreate(AddressBase):
-    user_id: int
+class CheckoutNewUser(AddressBase):
+    full_name: str
+    pet_name: str
+    pet_age: int
+    pet_weight: float
+    booking_date: str   #add the time slot time also in this
+
 
 class AddressUpdate(BaseModel):
     address_line1: Optional[str] = None

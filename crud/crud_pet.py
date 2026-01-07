@@ -2,7 +2,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
 from db.models.pet import Pet
-from schemas.pet import PetCreate, PetUpdate
+from schemas.pet import PetBase, PetUpdate
 
 async def get(db: AsyncSession, id: int) -> Optional[Pet]:
     result = await db.execute(select(Pet).filter(Pet.id == id))
@@ -19,9 +19,9 @@ async def get_multi_by_owner(
     )
     return result.scalars().all()
 
-async def create(db: AsyncSession, *, obj_in: PetCreate) -> Pet:
+async def create(db: AsyncSession, *, obj_in: PetBase, user_id: int) -> Pet:
     db_obj = Pet(
-        user_id=obj_in.user_id,
+        user_id=user_id,
         name=obj_in.name,
         species=obj_in.species,
         breed=obj_in.breed,
