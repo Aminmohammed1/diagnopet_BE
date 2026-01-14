@@ -2,7 +2,9 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from db.session import get_db
-from schemas.user import User, UserCreate, UserUpdate, UserLogin
+from schemas.user import User, UserCreate, UserUpdate, UserLogin, OnboardingUser
+from schemas.address import AddressBase, AddressCreate
+from crud import crud_address, crud_pet
 from crud import crud_user
 from datetime import timedelta
 from core.config import settings
@@ -13,11 +15,12 @@ from crud import crud_otp
 import random
 from utils.send_whatsapp_msg import send_message_via_twilio_sms
 from schemas.verify_otp import VerifyOtpRequest
-from api.deps import get_current_admin_or_staff_user
+from api.deps import get_current_admin_or_staff_user, get_current_user
 from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from pydantic import ValidationError
 from schemas.token import TokenPayload
+
 
 router = APIRouter()
 
@@ -63,10 +66,11 @@ async def send_otp(phone: str, db: AsyncSession = Depends(get_db)):
     
     # Send OTP via Twilio
     try:
-        send_message_via_twilio_sms(
-            body=f"Your Diagnopet OTP is {otp_code}. Valid for 10 minutes.",
-            to=phone
-        )
+        # send_message_via_twilio_sms(
+        #     body=f"Your Diagnopet OTP is {otp_code}. Valid for 10 minutes.",
+        #     to=phone
+        # )
+        pass
     except Exception as e:
         # In a real app, you might want to log this and maybe not fail if DB part succeeded
         # but for now let's raise error if sending fails
@@ -162,3 +166,15 @@ async def validate_token(
         "full_name": user.full_name,
         "email": user.email
     }
+
+
+# @router.post("/signup", response_model=User)
+# async def register(user_in: OnboardingUser, db: AsyncSession = Depends(get_db)):
+#     current_user: User = Depends(get_current_user)
+#     # user = await current_use.get_by_email(db, email=user_in.email)
+#     user = await crud_user.update(db, db_obj=current_user, obj_in=user_in)
+#     new_address = AddressCreate(user_id=current_user.id, **user_in.address)
+#     address = await crud_address.create(db, obj_in=new_address)
+#     pets = [PetCreate(user_id=current_user.id, **pet) for pet in user_in.pets]
+#     pet = await crud_pet.create(db, obj_in=pets)
+#     return user

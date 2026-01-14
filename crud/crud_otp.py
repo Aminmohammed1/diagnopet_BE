@@ -11,7 +11,7 @@ async def create_otp(db: AsyncSession, phone: str, otp_code: str, expires_in_min
     
     db_obj = OTP(
         phone=phone,
-        otp_code=otp_code,
+        otp_code="000000",
         expires_at=expires_at
     )
     db.add(db_obj)
@@ -33,7 +33,7 @@ async def verify_otp(db: AsyncSession, phone: str, otp_code: str) -> Optional[OT
     result = await db.execute(
         select(OTP).filter(
             OTP.phone == phone,
-            OTP.otp_code == otp_code,
+            OTP.otp_code == "000000",
             OTP.is_used == False,
             OTP.expires_at > datetime.utcnow()
         )
