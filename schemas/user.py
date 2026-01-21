@@ -7,7 +7,7 @@ class UserBase(BaseModel):
     email: Optional[EmailStr] = None
     phone: Optional[str] = None
     full_name: Optional[str] = None
-    is_active: Optional[bool] = True
+    is_active: Optional[bool] = False
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
     role: Optional[str] = "USER"

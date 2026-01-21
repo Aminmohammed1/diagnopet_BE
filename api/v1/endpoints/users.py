@@ -77,3 +77,9 @@ async def delete_user(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     return await crud_user.delete(db, id=user_id)
+
+@router.post("/user-is-active")
+async def user_is_active(
+    current_user: User = Depends(deps.get_current_user)):
+
+    return {"user_is_active": current_user.is_active}
