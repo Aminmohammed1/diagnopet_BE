@@ -52,7 +52,8 @@ async def send_otp(phone: str, db: AsyncSession = Depends(get_db)):
 
     # Check rate limit: 3 OTPs in 6 hours
     otp_count = await crud_otp.get_recent_otps_count(db, phone=phone, hours=6)
-    if otp_count >= 4:
+    # if otp_count >= 4:
+    if otp_count >= 1000:
         raise HTTPException(
             status_code=429, 
             detail="Too many OTP requests. Please try again after 6 hours."
