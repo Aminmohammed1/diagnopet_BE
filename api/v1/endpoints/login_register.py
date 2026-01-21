@@ -4,7 +4,7 @@ from typing import List
 from db.session import get_db
 from schemas.user import User, UserCreate, UserUpdate, UserLogin, OnboardingUser
 from schemas.address import AddressBase, AddressCreate
-from crud import crud_address, crud_pet
+# from crud import crud_address, crud_pet
 from crud import crud_user
 from datetime import timedelta
 from core.config import settings

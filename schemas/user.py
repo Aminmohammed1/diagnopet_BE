@@ -1,6 +1,7 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
 from schemas.address import AddressBase
+from schemas.pet import Pet
 
 class UserBase(BaseModel):
     email: Optional[EmailStr] = None
