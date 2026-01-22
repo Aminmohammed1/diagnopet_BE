@@ -5,7 +5,7 @@ class AddressBase(BaseModel):
     address_line1: str
     address_line2: Optional[str] = None
     city: str
-    state: str
+    state: str = "Telangana"
     postal_code: str
     country: str = "India"
     google_maps_link: Optional[str] = None

@@ -139,3 +139,86 @@ async def get_bookings_by_phone(
         booking_responses.append(Booking(**booking_dict))
     
     return booking_responses
+from pydantic import BaseModel, Field, HttpUrl, constr
+
+
+class PetRegistrationRequest(BaseModel):
+    owner_name: str = Field(
+        ..., 
+        description="Full name of the pet owner"
+    )
+    pet_name: str = Field(
+        ..., 
+        description="Name of the pet"
+    )
+    pet_age: int = Field(
+        ..., 
+        ge=0,
+        description="Age of the pet in years"
+    )
+    pet_weight: float = Field(
+        ..., 
+        gt=0,
+        description="Weight of the pet in kilograms"
+    )
+    address_line1: str = Field(
+        ..., 
+        description="House / Flat / Street"
+    )
+    address_line2: str = Field(
+        ..., 
+        description="Area and Landmark concatenated into a single string"
+    )
+    city: str = Field(
+        ..., 
+        description="City name"
+    )
+    postal_code: constr(min_length=4, max_length=10) = Field(
+        ..., 
+        description="Postal / ZIP code"
+    )
+    google_maps_link: HttpUrl = Field(
+        ..., 
+        description="Google Maps location link"
+    )
+    is_new_user: bool = Field(
+        ..., 
+        description="True if this is a new user, False if existing user"
+    )
+
+from crud import crud_address
+from .addresses import AddressCreate
+from schemas.user import UserUpdate
+@router.post("/confirm-booking")
+async def confirm_booking(
+    data: PetRegistrationRequest,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    '''
+    Request:
+    {
+    owner_name: str,
+    pet_name: str,
+    pet_age: int,
+    pet_weight: float,
+    address_line1: str,(House / Flat / Street)
+    address_line2: str,(Area / Landmark)(concatenate Area and Landmark in a single string)
+    city: str,
+    postal_code: str,
+    google_maps_link: str,(from map location),
+    is_new_user: bool (True -> new user, False -> existing user)
+    }
+    '''
+    if data.is_new_user:
+        # create new address for the user
+        new_address = AddressCreate(user_id=current_user.id, **data)
+        await crud_address.create(db, obj_in=new_address)
+        # update user details
+        user_update = UserUpdate(
+            full_name=data.owner_name,
+            is_active=True  #User becomes active on successful registration
+        )
+        await crud_user.update(db, db_obj=current_user, obj_in=user_update)
+        
+
