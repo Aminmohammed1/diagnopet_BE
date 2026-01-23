@@ -43,14 +43,6 @@ class UserInDBBase(UserBase):
 class User(UserInDBBase):
     pass
 
-class Pet(BaseModel):
-    name: str
-    species: str
-    breed: str
-    age: int
-    gender: str
-    weight: float
-
 class UserWithPetAndAddressInfo(BaseModel):
     full_name: str = None
     is_active: bool = False

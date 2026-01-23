@@ -206,16 +206,16 @@ async def confirm_booking(
     google_maps_link: str,(from map location),
     }
     """
-    if current_user.is_active == True:  # means user is completely new to app
+    if current_user.is_active == False:  # means user is completely new to app
         # create new address for the user
-        # new_address = AddressCreate(user_id=current_user.id, **data.model_dump())
-        # await crud_address.create(db, obj_in=new_address)
-        # # update user details
-        # user_update = UserUpdate(
-        #     full_name=data.owner_name,
-        #     is_active=True,  # User becomes active on successful registration
-        # )
-        # await crud_user.update(db, db_obj=current_user, obj_in=user_update)
+        new_address = AddressCreate(user_id=current_user.id, **data.model_dump())
+        await crud_address.create(db, obj_in=new_address)
+        # update user details
+        user_update = UserUpdate(
+            full_name=data.owner_name,
+            is_active=True,  # User becomes active on successful registration
+        )
+        await crud_user.update(db, db_obj=current_user, obj_in=user_update)
         user_new_pet = PetCreate(
             name=data.pet_name,
             species=data.pet_species,
