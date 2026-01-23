@@ -50,3 +50,13 @@ class Pet(BaseModel):
     age: int
     gender: str
     weight: float
+
+class UserWithPetAndAddressInfo(BaseModel):
+    full_name: str = None
+    is_active: bool = False
+    pets: list[Pet] = []
+    addresses: list[AddressBase] = []
+
+    class Config:
+        from_attributes = True
+
