@@ -16,4 +16,10 @@ class User(Base):
 
     role: Mapped[str] = mapped_column(String(50), default="USER")
 
-    addresses = relationship("Address", back_populates="user")
+    addresses = relationship("Address", back_populates="user", cascade="all, delete-orphan", passive_deletes=True)
+    pets = relationship(
+        "Pet",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True
+    )
