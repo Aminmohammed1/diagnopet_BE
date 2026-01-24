@@ -7,12 +7,12 @@ from crud import crud_address
 
 router = APIRouter()
 
-@router.post("/", response_model=Address)
-async def create_address(
-    address_in: AddressCreate,
-    db: AsyncSession = Depends(get_db)
-):
-    return await crud_address.create(db, obj_in=address_in)
+# @router.post("/", response_model=Address)
+# async def create_address(
+#     address_in: AddressCreate,
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     return await crud_address.create(db, obj_in=address_in)
 
 @router.get("/user/{user_id}", response_model=List[Address])
 async def read_addresses_by_user(
