@@ -2,8 +2,10 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from pydantic import BaseModel, Field
+
 from api import deps
-from crud import crud_booking, crud_user
+from crud import crud_booking, crud_user, crud_address, crud_pet
 from schemas.booking import Booking, BookingCreate, BookingUpdate, PhoneLookupRequest
 from db.session import get_db
 from db.models.user import User
@@ -152,37 +154,13 @@ async def get_bookings_by_phone(
         booking_responses.append(Booking(**booking_dict))
 
     return booking_responses
-
-
-from pydantic import BaseModel, Field, HttpUrl, constr
-
-
 class PetRegistrationRequest(BaseModel):
-    owner_name: str = Field(..., description="Full name of the pet owner")
-    pet_name: str = Field(..., description="Name of the pet")
-    pet_species: str = Field(..., description="Species of the pet (e.g., Dog, Cat)")
-    pet_breed: str = Field(..., description="Breed of the pet")
-    pet_age: int = Field(..., ge=0, description="Age of the pet in years")
-    pet_gender: str = Field(..., description="Gender of the pet (e.g., Male, Female)")
-    pet_weight: float = Field(..., gt=0, description="Weight of the pet in kilograms")
-
-    address_line1: str = Field(..., description="House / Flat / Street")
-    address_line2: str = Field(
-        ..., description="Area and Landmark concatenated into a single string"
+    pet_id: int = Field(..., description="ID of the user's pet")
+    address_id: int = Field(..., description="ID of the user's address")
+    test_ids: list[int] = Field(
+        ..., description="List of test IDs to be included in the booking"
     )
-    city: str = Field(..., description="City name")
-    postal_code: constr(min_length=4, max_length=10) = Field(
-        ..., description="Postal / ZIP code"
-    )
-    google_maps_link: str = Field(..., description="Google Maps location link")
-
-
-from crud import crud_address, crud_pet
-from .addresses import AddressCreate
-from schemas.user import UserUpdate
-from schemas.pet import PetCreate
-
-
+    date_time: str = Field(..., description="Preferred date and time for the booking")
 @router.post("/confirm-booking")
 async def confirm_booking(
     data: PetRegistrationRequest,
@@ -192,37 +170,23 @@ async def confirm_booking(
     """
     Request:
     {
-    owner_name: str,
-    pet_name: str,
-    pet_species: str,
-    pet_breed: str,
-    pet_age: int,
-    pet_gender: str,
-    pet_weight: float,
-    address_line1: str,(House / Flat / Street)
-    address_line2: str,(Area / Landmark)(concatenate Area and Landmark in a single string)
-    city: str,
-    postal_code: str,
-    google_maps_link: str,(from map location),
+        "pet_id": 1,
+        "address_id": 2,
+        "test_ids": [1, 2, 3],
+        "date_time": "2024-07-01T10:00:00"
     }
     """
-    if current_user.is_active == False:  # means user is completely new to app
-        # create new address for the user
-        new_address = AddressCreate(user_id=current_user.id, **data.model_dump())
-        await crud_address.create(db, obj_in=new_address)
-        # update user details
-        user_update = UserUpdate(
-            full_name=data.owner_name,
-            is_active=True,  # User becomes active on successful registration
+    # Validate data sent from frontend to check if the address and pet belong to the user
+    if (
+        current_user.id != (await crud_address.get(db, data.address_id)).user_id
+        or current_user.id != (await crud_pet.get(db, data.pet_id)).user_id
+    ):
+        raise HTTPException(
+            status_code=400, detail="Address/pet id does not belong to user"
         )
-        await crud_user.update(db, db_obj=current_user, obj_in=user_update)
-        user_new_pet = PetCreate(
-            name=data.pet_name,
-            species=data.pet_species,
-            breed=data.pet_breed,
-            gender=data.pet_gender,
-            age=data.pet_age,
-            weight=data.pet_weight,
-        )
-        await crud_pet.create(db, obj_in=user_new_pet, user_id=current_user.id)
-        return {"msg": "Booking confirmed for new user with new pet and address."}
+    # Create booking
+    new_booking = BookingCreate(
+        booking_date=data.date_time, address_id=data.address_id, test_ids=data.test_ids
+    )
+    await crud_booking.create(db=db, obj_in=new_booking, user_id=current_user.id)
+    return {"message": "Booking confirmed successfully"}
