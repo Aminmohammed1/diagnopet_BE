@@ -14,6 +14,19 @@ def send_message_via_twilio_sms(body, to):
         to=to
     )
 
+def new_send_whatsapp_template_via_twilio(content_sid, to, content_variables=None):
+    try:
+        message_params = {
+            "from_": "whatsapp:" + twilio_whatsapp_number.strip(),
+            "to": "whatsapp:" + to.strip(),
+            "content_sid": content_sid
+        }
+        if content_variables:
+            message_params["content_variables"] = content_variables  # Should be a JSON string
+        twilio_client.messages.create(**message_params)
+    except Exception as e:
+        print("Failed to send WhatsApp template message via Twilio:", e)
+
 def send_message_via_twilio_with_media(body, to, media_url=None):
     print("Sending message via twilio")
     print("Body: ", body)
@@ -47,4 +60,3 @@ def send_message_via_twilio(body, to):
         twilio_client.messages.create(**message_params)
     except Exception as e:
         print("Failed to send message via twilio", e)
-        
