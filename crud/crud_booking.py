@@ -9,7 +9,9 @@ from db.models.test import Test
 from schemas.booking import BookingCreate, BookingUpdate
 from twilio.rest import Client
 from core.config import settings
-from utils.send_whatsapp_msg import send_message_via_twilio_with_media, send_message_via_twilio_sms
+from utils.send_whatsapp_msg import new_send_whatsapp_template_via_twilio
+import json
+from crud import crud_address, crud_test
 
 
 account_sid = settings.TWILIO_ACCOUNT_SID
@@ -36,7 +38,6 @@ async def get_multi_by_user(db: AsyncSession, user_id: int, skip: int = 0, limit
         select(Booking).options(selectinload(Booking.items)).filter(Booking.user_id == user_id).offset(skip).limit(limit)
     )
     return result.scalars().all()
-
 async def create(db: AsyncSession, obj_in: BookingCreate, user_id: int) -> Booking:
     # 0. Validate Test IDs
     unique_test_ids = list(set(obj_in.test_ids))
@@ -52,8 +53,7 @@ async def create(db: AsyncSession, obj_in: BookingCreate, user_id: int) -> Booki
     booking_data = obj_in.model_dump(exclude={"test_ids"})
     db_obj = Booking(**booking_data, user_id=user_id)
     db.add(db_obj)
-    await db.flush() # Get ID
-
+    await db.flush()
     # 2. Create BookingItems
     msg = "Tests :"
     for i, test_id in enumerate(obj_in.test_ids):
@@ -62,21 +62,31 @@ async def create(db: AsyncSession, obj_in: BookingCreate, user_id: int) -> Booki
         msg += f"\n{i+1}. {test_id}" 
 
     await db.commit()
-
     # 3. notify owner about the booking
     from crud import crud_user
     user = await crud_user.get(db, id=user_id)
     user_name = user.full_name if user else "Unknown User"
-
     try:
-        send_message_via_twilio_with_media(
-            body=f"New booking for {user_name} on {obj_in.booking_date} at {obj_in.address}\nLink: {obj_in.address_link}\n{msg}",
-            to="+918639675595"
-        )
+        content_sid = settings.TEMPLATE_ID  # Your template SID
+        to = "+918639675595"  # Recipient's number
+        address = await crud_address.get(db, obj_in.address_id)
+        if not address or not address.google_maps_link:
+            address_link = "Address link not provided"
+        else:
+            address_link = address.google_maps_link
+        tests = await crud_test.get_by_list_of_ids(db, obj_in.test_ids)
+        tests_names = ""
+        for i, test in enumerate(tests):
+            tests_names += f"{i+1}.{test.name} "
+        user_name_with_date = f'{user_name} on {obj_in.booking_date.strftime("%d-%m-%Y %I:%M %p")}.'
+        content_variables = json.dumps({
+            "1": user_name_with_date,
+            "2": address_link,
+            "3": tests_names,
+        })
+        new_send_whatsapp_template_via_twilio(content_sid, to, content_variables)
     except Exception as e:
         print(f"Failed to send WhatsApp message: {e}")
-    
-    # 4. Refresh with items
     return await get(db, db_obj.id)
 
 async def update(db: AsyncSession, db_obj: Booking, obj_in: BookingUpdate) -> Booking:

@@ -8,6 +8,19 @@ async def get(db: AsyncSession, id: int) -> Optional[Test]:
     result = await db.execute(select(Test).filter(Test.id == id))
     return result.scalars().first()
 
+async def get_by_list_of_ids(
+    db: AsyncSession,
+    ids: list[int],
+) -> list[Test]:
+    if not ids:
+        return []
+
+    result = await db.execute(
+        select(Test).where(Test.id.in_(ids))
+    )
+    return result.scalars().all()
+
+
 async def get_multi(db: AsyncSession, skip: int = 0, limit: int = 100) -> List[Test]:
     result = await db.execute(select(Test).offset(skip).limit(limit))
     return result.scalars().all()
