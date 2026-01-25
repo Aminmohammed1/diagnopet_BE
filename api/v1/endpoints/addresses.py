@@ -9,12 +9,16 @@ from schemas.user import User
 
 router = APIRouter()
 
-# @router.post("/", response_model=Address)
-# async def create_address(
-#     address_in: AddressCreate,
-#     db: AsyncSession = Depends(get_db)
-# ):
-#     return await crud_address.create(db, obj_in=address_in)
+@router.post("/", response_model=Address)
+async def create_address(
+    address_in: AddressCreate,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user)
+):
+    try:
+        return await crud_address.create(db, obj_in=address_in, user_id=current_user.id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Please add your name and pet details first.")
 
 @router.get("/user/{user_id}", response_model=List[Address])
 async def read_addresses_by_user(

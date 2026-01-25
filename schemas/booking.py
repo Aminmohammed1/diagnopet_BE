@@ -22,7 +22,7 @@ class BookingItem(BookingItemBase):
 
 class BookingBase(BaseModel):
     booking_date: datetime
-    status: Optional[str] = "pending"
+    status: Optional[str] = "confirmed"
     address_id: int
 
 
