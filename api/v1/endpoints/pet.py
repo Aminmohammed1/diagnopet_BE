@@ -1,4 +1,5 @@
-from crud import crud_pet
+from crud import crud_pet, crud_user
+from schemas.user import UserUpdate
 from db.session import get_db
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -13,8 +14,9 @@ router = APIRouter()
 async def create_pet(
     pet_in: PetCreate,
     db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(deps.get_current_active_user)
+    current_user: User = Depends(deps.get_current_user)
 ):
+    await crud_user.update(db, db_obj=current_user, obj_in=UserUpdate(is_active=True, full_name=pet_in.userFullName))
     return await crud_pet.create(db, obj_in=pet_in, user_id=current_user.id)
 
 @router.get("/", response_model=List[Pet])
