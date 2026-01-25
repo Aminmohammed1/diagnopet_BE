@@ -1,6 +1,6 @@
 from pydantic import BaseModel, EmailStr
 from typing import Optional
-from schemas.address import AddressBase
+from schemas.address import Address
 from schemas.pet import Pet
 
 class UserBase(BaseModel):
@@ -18,14 +18,6 @@ class UserCreate(UserBase):
     phone: str
     password: str
     full_name: str
-
-class OnboardingUser(UserBase):
-    email: EmailStr
-    phone: str
-    password: str
-    full_name: str
-    pets: list[Pet]
-    address: AddressBase
 
 class UserLogin(UserBase):
     phone: str
@@ -47,7 +39,7 @@ class UserWithPetAndAddressInfo(BaseModel):
     full_name: str = None
     is_active: bool = False
     pets: list[Pet] = []
-    addresses: list[AddressBase] = []
+    addresses: list[Address] = []
 
     class Config:
         from_attributes = True

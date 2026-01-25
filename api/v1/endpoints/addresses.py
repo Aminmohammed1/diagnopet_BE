@@ -4,6 +4,8 @@ from typing import List
 from db.session import get_db
 from schemas.address import Address, AddressCreate, AddressUpdate
 from crud import crud_address
+from api import deps
+from schemas.user import User
 
 router = APIRouter()
 

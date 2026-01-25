@@ -22,7 +22,7 @@ class PetUpdate(BaseModel):
 
 class PetInDBBase(PetBase):
     id: int
-    user_id: int
+    # user_id: int
 
     class Config:
         from_attributes = True

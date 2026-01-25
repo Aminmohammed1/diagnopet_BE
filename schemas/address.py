@@ -12,7 +12,7 @@ class AddressBase(BaseModel):
     is_default: bool = False
 
 class AddressCreate(AddressBase):
-    user_id: int
+    pass
 
 class AddressUpdate(BaseModel):
     address_line1: Optional[str] = None
@@ -26,7 +26,7 @@ class AddressUpdate(BaseModel):
 
 class AddressInDBBase(AddressBase):
     id: int
-    user_id: int
+    # user_id: int
 
     class Config:
         from_attributes = True

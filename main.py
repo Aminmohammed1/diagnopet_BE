@@ -7,6 +7,7 @@ from db import models
 from contextlib import asynccontextmanager
 from db.session import AsyncSessionLocal
 from db.init_db import init_db
+from api.v1.endpoints import pet
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
