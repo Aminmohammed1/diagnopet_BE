@@ -3,15 +3,15 @@ from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from pydantic import BaseModel, Field
-
 from api import deps
-from crud import crud_booking, crud_user, crud_address, crud_pet
+from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test
 from schemas.booking import Booking, BookingCreate, BookingUpdate, PhoneLookupRequest
 from db.session import get_db
 from db.models.user import User
 from db.models.booking import Booking as BookingModel
 from db.models.booking_item import BookingItem as BookingItemModel
 from db.models.test import Test
+from datetime import date, datetime
 
 router = APIRouter()
 
@@ -154,6 +154,8 @@ async def get_bookings_by_phone(
         booking_responses.append(Booking(**booking_dict))
 
     return booking_responses
+
+
 class PetRegistrationRequest(BaseModel):
     pet_id: int = Field(..., description="ID of the user's pet")
     address_id: int = Field(..., description="ID of the user's address")
@@ -161,6 +163,48 @@ class PetRegistrationRequest(BaseModel):
         ..., description="List of test IDs to be included in the booking"
     )
     date_time: str = Field(..., description="Preferred date and time for the booking")
+
+
+class TestItem(BaseModel):
+    id: int
+    name: str
+    sample_type: str
+
+
+class UpcomingBookingsResponse(BaseModel):
+    id: int = Field(..., description="ID of the booking")
+    booking_date: date = Field(..., description="Date of the booking")
+    booking_time: str = Field(..., description="Time of the booking (AM/PM format)")
+    status: str = Field(..., description="Status of the booking")
+    address: str = Field(..., description="Address for the booking")
+    address_link: str = Field(..., description="Google Maps link for the address")
+    tests: List[TestItem] = Field(..., description="List of tests in the booking")
+    total_amount: float = Field(..., description="Total amount for the booking")
+    created_at: datetime = Field(..., description="Creation timestamp of the booking")
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "id": 101,
+                "booking_date": "2026-01-28",
+                "booking_time": "10:00 AM",
+                "status": "confirmed",
+                "address": "123 Pet Street, Hyderabad, Telangana 500001",
+                "address_link": "https://maps.google.com/?q=123+Pet+Street+Hyderabad",
+                "tests": [
+                    {
+                        "id": 1,
+                        "name": "Complete Blood Count (CBC)",
+                        "sample_type": "Blood",
+                    },
+                    {"id": 2, "name": "Liver Function Test", "sample_type": "Blood"},
+                ],
+                "total_amount": 2499.0,
+                "created_at": "2026-01-25T10:30:00Z",
+            }
+        }
+
+
 @router.post("/confirm-booking")
 async def confirm_booking(
     data: PetRegistrationRequest,
@@ -190,3 +234,59 @@ async def confirm_booking(
     )
     await crud_booking.create(db=db, obj_in=new_booking, user_id=current_user.id)
     return {"message": "Booking confirmed successfully"}
+
+
+# @router.post("/upcoming-bookings", response_model=UpcomingBookingsResponse)
+@router.post("/upcoming-bookings")
+async def get_upcoming_bookings(
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_user),
+) -> Any:
+    """
+    Request: Payload None, only token authentication is required.
+    Response:
+    [{
+        "id": 101,
+        "booking_date": "2026-01-28",
+        "booking_time": "10:00 AM",
+        "status": "confirmed",
+        "address": "123 Pet Street, Hyderabad, Telangana 500001",
+        "address_link": "https://maps.google.com/?q=123+Pet+Street+Hyderabad",
+        "tests": [
+            {"id": 1, "name": "Complete Blood Count (CBC)", "sample_type": "Blood"},
+            {"id": 2, "name": "Liver Function Test", "sample_type": "Blood"}
+        ],
+        "total_amount": 2499.0,
+        "created_at": "2026-01-25T10:30:00Z"
+    }]
+    """
+    # Fetch upcoming bookings for the current user
+    bookings = await crud_booking.get_upcoming_bookings(db=db, user_id=current_user.id)
+    result = []
+    from datetime import timezone
+    import pytz
+
+    ist = pytz.timezone("Asia/Kolkata")
+
+    
+    for booking in bookings:
+        tests = await crud_test.get_tests_by_booking_id(db, booking.id)
+        temp = {}
+        temp["id"] = booking.id
+        temp["booking_date"] = booking.booking_date
+        utc_dt = booking.booking_date
+        local_time = utc_dt.astimezone(ist).strftime("%I:%M %p")
+        temp["booking_time"] = local_time
+        temp["status"] = booking.status
+        complete_address = await crud_address.get(db, booking.address_id)
+        temp["address"] = complete_address.address_line1 + ", " + complete_address.address_line2 + ", " + complete_address.city + ", " + complete_address.state + "\n" + complete_address.postal_code
+        temp["address_link"] = complete_address.google_maps_link
+        temp["tests"] = [{
+            "id": test.id,
+            "name": test.name,
+            "sample_type": test.sample_type
+        } for test in tests]
+        temp["total_amount"] = sum(test.price for test in tests) if tests else 0.0
+        temp["created_at"] = booking.created_at
+        result.append(temp)
+    return result

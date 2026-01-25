@@ -12,6 +12,7 @@ from core.config import settings
 from utils.send_whatsapp_msg import new_send_whatsapp_template_via_twilio
 import json
 from crud import crud_address, crud_test
+from datetime import datetime
 
 
 account_sid = settings.TWILIO_ACCOUNT_SID
@@ -105,3 +106,14 @@ async def delete(db: AsyncSession, id: int) -> Optional[Booking]:
         await db.delete(obj)
         await db.commit()
     return obj
+
+async def get_upcoming_bookings(db: AsyncSession, user_id: int) -> List[Booking]:
+    now = datetime.utcnow()
+    result = await db.execute(
+        select(Booking)
+        .options(selectinload(Booking.items))
+        .filter(Booking.user_id == user_id)
+        .filter(Booking.booking_date >= now)
+        .order_by(Booking.booking_date.asc())
+    )
+    return result.scalars().all()

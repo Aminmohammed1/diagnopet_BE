@@ -15,7 +15,7 @@ class Booking(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     address_id: Mapped[int] = mapped_column(ForeignKey("addresses.id"), index=True)
     booking_date: Mapped[datetime] = mapped_column(DateTime(timezone=True))
-    status: Mapped[str] = mapped_column(String(50), default="pending", index=True)
+    status: Mapped[str] = mapped_column(String(50), default="confirmed", index=True)
     
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), onupdate=func.now(), server_default=func.now())
