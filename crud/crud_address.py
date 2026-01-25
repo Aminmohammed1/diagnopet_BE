@@ -14,17 +14,20 @@ async def get_multi_by_user(db: AsyncSession, user_id: int, skip: int = 0, limit
     )
     return result.scalars().all()
 
-async def create(db: AsyncSession, obj_in: AddressCreate) -> Address:
-    if obj_in.is_default:
+async def create(db: AsyncSession, obj_in: AddressCreate, user_id: int) -> Address:
+    # if obj_in.is_default:
         # Unset existing default address for this user
-        await db.execute(
-            Address.__table__.update()
-            .where(Address.user_id == obj_in.user_id)
-            .values(is_default=False)
-        )
+        # await db.execute(
+        #     Address.__table__.update()
+        #     .where(Address.user_id == user_id)
+        #     .values(is_default=False)
+        # )
+
+    print("obj_in", obj_in)
+    print("user_id", user_id)
         
     db_obj = Address(
-        user_id=obj_in.user_id,
+        user_id=user_id,
         address_line1=obj_in.address_line1,
         address_line2=obj_in.address_line2,
         city=obj_in.city,

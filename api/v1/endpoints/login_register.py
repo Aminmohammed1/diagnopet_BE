@@ -2,9 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import List
 from db.session import get_db
-from schemas.user import User, UserCreate, UserUpdate, UserLogin, OnboardingUser
+from schemas.user import User, UserCreate, UserUpdate, UserLogin
 from schemas.address import AddressBase, AddressCreate
-# from crud import crud_address, crud_pet
 from crud import crud_user
 from datetime import timedelta
 from core.config import settings
@@ -167,15 +166,3 @@ async def validate_token(
         "full_name": user.full_name,
         "email": user.email
     }
-
-
-# @router.post("/signup", response_model=User)
-# async def register(user_in: OnboardingUser, db: AsyncSession = Depends(get_db)):
-#     current_user: User = Depends(get_current_user)
-#     # user = await current_use.get_by_email(db, email=user_in.email)
-#     user = await crud_user.update(db, db_obj=current_user, obj_in=user_in)
-#     new_address = AddressCreate(user_id=current_user.id, **user_in.address)
-#     address = await crud_address.create(db, obj_in=new_address)
-#     pets = [PetCreate(user_id=current_user.id, **pet) for pet in user_in.pets]
-#     pet = await crud_pet.create(db, obj_in=pets)
-#     return user

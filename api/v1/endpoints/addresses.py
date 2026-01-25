@@ -4,15 +4,20 @@ from typing import List
 from db.session import get_db
 from schemas.address import Address, AddressCreate, AddressUpdate
 from crud import crud_address
+from api import deps
+from schemas.user import User
 
 router = APIRouter()
 
 @router.post("/", response_model=Address)
 async def create_address(
     address_in: AddressCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(deps.get_current_active_user),
 ):
-    return await crud_address.create(db, obj_in=address_in)
+    print("current_user", current_user.id)
+    print("address_in", address_in)
+    return await crud_address.create(db, obj_in=address_in, user_id=current_user.id)
 
 @router.get("/user/{user_id}", response_model=List[Address])
 async def read_addresses_by_user(
