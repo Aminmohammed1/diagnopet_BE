@@ -9,15 +9,12 @@ from schemas.user import User
 
 router = APIRouter()
 
-@router.post("/", response_model=Address)
-async def create_address(
-    address_in: AddressCreate,
-    db: AsyncSession = Depends(get_db),
-    current_user: User = Depends(deps.get_current_active_user),
-):
-    print("current_user", current_user.id)
-    print("address_in", address_in)
-    return await crud_address.create(db, obj_in=address_in, user_id=current_user.id)
+# @router.post("/", response_model=Address)
+# async def create_address(
+#     address_in: AddressCreate,
+#     db: AsyncSession = Depends(get_db)
+# ):
+#     return await crud_address.create(db, obj_in=address_in)
 
 @router.get("/user/{user_id}", response_model=List[Address])
 async def read_addresses_by_user(

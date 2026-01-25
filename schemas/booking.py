@@ -2,11 +2,14 @@ from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional, List
 
+
 class BookingItemBase(BaseModel):
     test_id: int
 
+
 class BookingItemCreate(BookingItemBase):
     pass
+
 
 class BookingItem(BookingItemBase):
     id: int
@@ -16,20 +19,22 @@ class BookingItem(BookingItemBase):
     class Config:
         from_attributes = True
 
+
 class BookingBase(BaseModel):
     booking_date: datetime
     status: Optional[str] = "pending"
-    address: str
-    address_link: Optional[str] = None
+    address_id: int
+
 
 class BookingCreate(BookingBase):
     test_ids: List[int]
 
+
 class BookingUpdate(BaseModel):
     status: Optional[str] = None
     booking_date: Optional[datetime] = None
-    address: Optional[str] = None
-    address_link: Optional[str] = None
+    address_id: Optional[int] = None
+
 
 class BookingInDBBase(BookingBase):
     id: int
@@ -41,8 +46,10 @@ class BookingInDBBase(BookingBase):
     class Config:
         from_attributes = True
 
+
 class Booking(BookingInDBBase):
     pass
+
 
 class PhoneLookupRequest(BaseModel):
     phone: str
