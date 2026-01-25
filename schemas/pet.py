@@ -10,7 +10,7 @@ class PetBase(BaseModel):
     weight: float
 
 class PetCreate(PetBase):
-    pass
+    userFullName: str
 
 class PetUpdate(BaseModel):
     name: Optional[str] = None
