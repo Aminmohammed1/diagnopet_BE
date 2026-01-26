@@ -2,6 +2,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel, Field
 from api import deps
 from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test
@@ -113,6 +114,7 @@ async def get_bookings_by_phone(
     # Get all bookings for this user with test names
     result = await db.execute(
         select(BookingModel)
+        .options(selectinload(BookingModel.address))
         .filter(BookingModel.user_id == user.id)
         .order_by(BookingModel.created_at.desc())
     )
@@ -130,15 +132,13 @@ async def get_bookings_by_phone(
             .filter(BookingItemModel.booking_id == booking.id)
         )
         items_with_names = items_result.all()
-
         # Construct booking response
         booking_dict = {
             "id": booking.id,
             "user_id": booking.user_id,
             "booking_date": booking.booking_date,
             "status": booking.status,
-            "address": booking.address,
-            "address_link": booking.address_link,
+            "address_id": booking.address_id,
             "created_at": booking.created_at,
             "updated_at": booking.updated_at,
             "items": [
