@@ -12,7 +12,8 @@ from db.models.user import User
 from db.models.booking import Booking as BookingModel
 from db.models.booking_item import BookingItem as BookingItemModel
 from db.models.test import Test
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 
 router = APIRouter()
 
@@ -235,8 +236,6 @@ async def confirm_booking(
     await crud_booking.create(db=db, obj_in=new_booking, user_id=current_user.id)
     return {"message": "Booking confirmed successfully"}
 
-
-# @router.post("/upcoming-bookings", response_model=UpcomingBookingsResponse)
 @router.post("/upcoming-bookings")
 async def get_upcoming_bookings(
     db: AsyncSession = Depends(get_db),
@@ -290,3 +289,56 @@ async def get_upcoming_bookings(
         temp["created_at"] = booking.created_at
         result.append(temp)
     return result
+
+from pydantic import BaseModel, Field
+
+class AdminBillingRequest(BaseModel):
+    # month: int = Field(..., ge=1, le=12)
+    # year: int = Field(..., ge=2000)
+    # day: int | None = Field(None, ge=1, le=31)
+    start_date: str = Field(..., description="Start ISO date time string")
+    end_date: str = Field(..., description="End ISO date time string")
+    
+
+@router.post("/admin/billing")
+async def get_upcoming_bookings(
+    request: AdminBillingRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(deps.get_current_admin_user),
+) -> Any:
+    from db.models.booking import Booking
+    
+    # Parse ISO format strings and handle IST timezone
+    # IST is UTC+5:30
+    ist_tz = timezone(timedelta(hours=5, minutes=30))
+    
+    # Parse the ISO string
+    if request.start_date.endswith('Z'):
+        # Already in UTC
+        start_dt = datetime.fromisoformat(request.start_date.replace('Z', '+00:00'))
+    else:
+        # Assume IST if no timezone info, convert to UTC
+        start_dt = datetime.fromisoformat(request.start_date)
+        if start_dt.tzinfo is None:
+            start_dt = start_dt.replace(tzinfo=ist_tz)
+        start_dt = start_dt.astimezone(timezone.utc)
+    
+    if request.end_date.endswith('Z'):
+        # Already in UTC
+        end_dt = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
+    else:
+        # Assume IST if no timezone info, convert to UTC
+        end_dt = datetime.fromisoformat(request.end_date)
+        if end_dt.tzinfo is None:
+            end_dt = end_dt.replace(tzinfo=ist_tz)
+        end_dt = end_dt.astimezone(timezone.utc)
+    
+    query_result = await db.execute(select(Booking).where(
+        Booking.booking_date >= start_dt,
+        Booking.booking_date <= end_dt,
+    ).order_by(Booking.booking_date.asc()))
+    for booking in query_result.scalars().all():
+        booking_items = await crud_test.get_tests_by_booking_id(db, booking.id)
+        for item in booking_items:
+            print(f"Booking ID: {booking.id}, Test: {item.name}")
+
