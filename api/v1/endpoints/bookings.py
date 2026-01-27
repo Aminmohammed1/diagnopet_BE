@@ -310,35 +310,72 @@ async def get_upcoming_bookings(
     
     # Parse ISO format strings and handle IST timezone
     # IST is UTC+5:30
-    ist_tz = timezone(timedelta(hours=5, minutes=30))
-    
-    # Parse the ISO string
-    if request.start_date.endswith('Z'):
-        # Already in UTC
-        start_dt = datetime.fromisoformat(request.start_date.replace('Z', '+00:00'))
-    else:
-        # Assume IST if no timezone info, convert to UTC
-        start_dt = datetime.fromisoformat(request.start_date)
-        if start_dt.tzinfo is None:
-            start_dt = start_dt.replace(tzinfo=ist_tz)
-        start_dt = start_dt.astimezone(timezone.utc)
-    
-    if request.end_date.endswith('Z'):
-        # Already in UTC
-        end_dt = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
-    else:
-        # Assume IST if no timezone info, convert to UTC
-        end_dt = datetime.fromisoformat(request.end_date)
-        if end_dt.tzinfo is None:
-            end_dt = end_dt.replace(tzinfo=ist_tz)
-        end_dt = end_dt.astimezone(timezone.utc)
-    
-    query_result = await db.execute(select(Booking).where(
-        Booking.booking_date >= start_dt,
-        Booking.booking_date <= end_dt,
-    ).order_by(Booking.booking_date.asc()))
-    for booking in query_result.scalars().all():
-        booking_items = await crud_test.get_tests_by_booking_id(db, booking.id)
-        for item in booking_items:
-            print(f"Booking ID: {booking.id}, Test: {item.name}")
+    try:
+        ist_tz = timezone(timedelta(hours=5, minutes=30))
+        
+        # Parse the ISO string
+        if request.start_date.endswith('Z'):
+            # Already in UTC
+            start_dt = datetime.fromisoformat(request.start_date.replace('Z', '+00:00'))
+        else:
+            # Assume IST if no timezone info, convert to UTC
+            start_dt = datetime.fromisoformat(request.start_date)
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=ist_tz)
+            start_dt = start_dt.astimezone(timezone.utc)
+        
+        if request.end_date.endswith('Z'):
+            # Already in UTC
+            end_dt = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
+        else:
+            # Assume IST if no timezone info, convert to UTC
+            end_dt = datetime.fromisoformat(request.end_date)
+            if end_dt.tzinfo is None:
+                end_dt = end_dt.replace(tzinfo=ist_tz)
+            end_dt = end_dt.astimezone(timezone.utc)
+        
+        query_result = await db.execute(select(Booking).where(
+            Booking.booking_date >= start_dt,
+            Booking.booking_date <= end_dt,
+        ).order_by(Booking.booking_date.asc()))
+        result = []
+        for booking in query_result.scalars().all():
+            temp = {}
+            temp["booking_id"] = booking.id
+            customer = await crud_user.get(db, booking.user_id)
+            temp["customer"] = customer.full_name
+            temp["phone_number"] = customer.phone
+            temp["date"] = booking.booking_date
+            temp["status"] = booking.status
+            tests = await crud_test.get_tests_by_booking_id(db, booking.id)
+            temp["tests"] = [{
+                "id": test.id,
+                "name": test.name,
+                "sample_type": test.sample_type,
+                "price": test.price
+            } for test in tests]
+            temp["amount"] = sum(test.price for test in tests) if tests else 0.0
+            result.append(temp)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format(must be ISO)/error occured in processing\n{e}")
+
+class UpdateBookingStatusRequest(BaseModel):
+    booking_id: int = Field(..., description="ID of the booking to update")
+    status: str = Field(..., description="New status for the booking")
+@router.post("/admin/booking-status-update")
+async def update_booking_status(
+    request: UpdateBookingStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(deps.get_current_admin_user),
+) -> Any:
+    """
+    Update booking status (admin/staff/superuser only).
+    """
+    booking = await crud_booking.get(db=db, id=request.booking_id)
+    if not booking:
+        raise HTTPException(status_code=400, detail="Booking not found")
+    booking_in = BookingUpdate(status=request.status)
+    booking = await crud_booking.update(db=db, db_obj=booking, obj_in=booking_in)
+    return {"message": f"Booking {booking.id} status updated to {request.status} successfully"}
 
