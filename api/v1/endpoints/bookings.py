@@ -307,7 +307,27 @@ async def get_upcoming_bookings(
     admin: User = Depends(deps.get_current_admin_user),
 ) -> Any:
     from db.models.booking import Booking
-    
+    async def response_builder(bookings: List[Booking]):
+        result = []
+        for booking in bookings:
+            temp = {}
+            temp["booking_id"] = booking.id
+            customer = await crud_user.get(db, booking.user_id)
+            temp["customer"] = customer.full_name
+            temp["phone_number"] = customer.phone
+            temp["date"] = booking.booking_date
+            temp["status"] = booking.status
+            tests = await crud_test.get_tests_by_booking_id(db, booking.id)
+            temp["tests"] = [{
+                "id": test.id,
+                "name": test.name,
+                "sample_type": test.sample_type,
+                "price": test.price
+            } for test in tests]
+            temp["amount"] = sum(test.price for test in tests) if tests else 0.0
+            result.append(temp)
+        return result
+
     # Parse ISO format strings and handle IST timezone
     # IST is UTC+5:30
     try:
@@ -333,29 +353,15 @@ async def get_upcoming_bookings(
             if end_dt.tzinfo is None:
                 end_dt = end_dt.replace(tzinfo=ist_tz)
             end_dt = end_dt.astimezone(timezone.utc)
-        
-        query_result = await db.execute(select(Booking).where(
+        # now = datetime.now(timezone.utc)
+        # past_confirmed_bookings = await db.execute(select(Booking).where(Booking.booking_date < now, Booking.status == "confirmed").order_by(Booking.booking_date.asc()))
+        future_bookings = await db.execute(select(Booking).where(
             Booking.booking_date >= start_dt,
             Booking.booking_date <= end_dt,
         ).order_by(Booking.booking_date.asc()))
-        result = []
-        for booking in query_result.scalars().all():
-            temp = {}
-            temp["booking_id"] = booking.id
-            customer = await crud_user.get(db, booking.user_id)
-            temp["customer"] = customer.full_name
-            temp["phone_number"] = customer.phone
-            temp["date"] = booking.booking_date
-            temp["status"] = booking.status
-            tests = await crud_test.get_tests_by_booking_id(db, booking.id)
-            temp["tests"] = [{
-                "id": test.id,
-                "name": test.name,
-                "sample_type": test.sample_type,
-                "price": test.price
-            } for test in tests]
-            temp["amount"] = sum(test.price for test in tests) if tests else 0.0
-            result.append(temp)
+        # result = await response_builder(past_confirmed_bookings.scalars().all())
+        # result.extend(await response_builder(future_bookings.scalars().all()))
+        result = await response_builder(future_bookings.scalars().all())
         return result
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Invalid date format(must be ISO)/error occured in processing\n{e}")
