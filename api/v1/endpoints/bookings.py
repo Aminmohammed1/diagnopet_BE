@@ -12,7 +12,8 @@ from db.models.user import User
 from db.models.booking import Booking as BookingModel
 from db.models.booking_item import BookingItem as BookingItemModel
 from db.models.test import Test
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
+from dateutil.relativedelta import relativedelta
 
 router = APIRouter()
 
@@ -132,7 +133,6 @@ async def get_bookings_by_phone(
             .filter(BookingItemModel.booking_id == booking.id)
         )
         items_with_names = items_result.all()
-
         # Construct booking response
         booking_dict = {
             "id": booking.id,
@@ -239,8 +239,6 @@ async def confirm_booking(
     await crud_booking.create(db=db, obj_in=new_booking, user_id=current_user.id)
     return {"message": "Booking confirmed successfully"}
 
-
-# @router.post("/upcoming-bookings", response_model=UpcomingBookingsResponse)
 @router.post("/upcoming-bookings")
 async def get_upcoming_bookings(
     db: AsyncSession = Depends(get_db),
@@ -294,3 +292,136 @@ async def get_upcoming_bookings(
         temp["created_at"] = booking.created_at
         result.append(temp)
     return result
+
+from pydantic import BaseModel, Field
+
+class AdminBillingRequest(BaseModel):
+    # month: int = Field(..., ge=1, le=12)
+    # year: int = Field(..., ge=2000)
+    # day: int | None = Field(None, ge=1, le=31)
+    start_date: str = Field(..., description="Start ISO date time string")
+    end_date: str = Field(..., description="End ISO date time string")
+    
+from db.models.booking import Booking
+async def response_builder(bookings: List[Booking], db: AsyncSession) -> List[Any]:
+    result = []
+    for booking in bookings:
+        temp = {}
+        temp["booking_id"] = booking.id
+        customer = await crud_user.get(db, booking.user_id)
+        temp["customer"] = customer.full_name
+        temp["phone_number"] = customer.phone
+        temp["date"] = booking.booking_date
+        temp["status"] = booking.status
+        tests = await crud_test.get_tests_by_booking_id(db, booking.id)
+        temp["tests"] = [{
+            "id": test.id,
+            "name": test.name,
+            "sample_type": test.sample_type,
+            "price": test.price
+        } for test in tests]
+        temp["amount"] = sum(test.price for test in tests) if tests else 0.0
+        result.append(temp)
+    return result
+
+@router.post("/admin/billing")
+async def get_filtered_bookings(
+    request: AdminBillingRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(deps.get_current_admin_user),
+) -> Any:
+
+    # Parse ISO format strings and handle IST timezone
+    # IST is UTC+5:30
+    try:
+        ist_tz = timezone(timedelta(hours=5, minutes=30))
+        
+        # Parse the ISO string
+        if request.start_date.endswith('Z'):
+            # Already in UTC
+            start_dt = datetime.fromisoformat(request.start_date.replace('Z', '+00:00'))
+        else:
+            # Assume IST if no timezone info, convert to UTC
+            start_dt = datetime.fromisoformat(request.start_date)
+            if start_dt.tzinfo is None:
+                start_dt = start_dt.replace(tzinfo=ist_tz)
+            start_dt = start_dt.astimezone(timezone.utc)
+        
+        if request.end_date.endswith('Z'):
+            # Already in UTC
+            end_dt = datetime.fromisoformat(request.end_date.replace('Z', '+00:00'))
+        else:
+            # Assume IST if no timezone info, convert to UTC
+            end_dt = datetime.fromisoformat(request.end_date)
+            if end_dt.tzinfo is None:
+                end_dt = end_dt.replace(tzinfo=ist_tz)
+            end_dt = end_dt.astimezone(timezone.utc)
+        filtered_bookings = await db.execute(select(Booking).where(
+            Booking.booking_date >= start_dt,
+            Booking.booking_date <= end_dt,
+        ).order_by(Booking.booking_date.asc()))
+        result = await response_builder(filtered_bookings.scalars().all(), db)
+        return result
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=f"Invalid date format(must be ISO)/error occured in processing\n{e}")
+
+@router.get("/admin/billing/{date_str}")
+async def get_today_bookings(
+    date_str: str,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(deps.get_current_admin_user),
+) -> Any:
+    from sqlalchemy import Date, cast
+    import pytz
+    ist = pytz.timezone("Asia/Kolkata")
+    now = datetime.now(ist)
+    if date_str == "today":
+        target_date = now.date()
+        result = await db.execute(select(Booking).where(
+            cast(Booking.booking_date, Date) == target_date
+        ))
+        bookings = result.scalars().all()
+        return await response_builder(bookings, db)
+    elif date_str == "month":
+          # Get current time in IST
+        first_day = now.replace(day=1).date()
+        last_day = (now.replace(day=1) + relativedelta(months=1) - timedelta(days=1)).date()
+        result = await db.execute(select(Booking).where(
+            cast(Booking.booking_date, Date) >= first_day,
+            cast(Booking.booking_date, Date) <= last_day
+        ).order_by(Booking.booking_date.asc()))
+        bookings = result.scalars().all()
+        return await response_builder(bookings, db)
+    elif date_str == "pending":
+        past_confirmed_bookings = await db.execute(select(Booking).where(Booking.booking_date < now, Booking.status == "confirmed").order_by(Booking.booking_date.asc()))
+        bookings = past_confirmed_bookings.scalars().all()
+        return await response_builder(bookings, db)
+    elif date_str == "future":
+        future_bookings = await db.execute(select(Booking).where(Booking.booking_date >= now).order_by(Booking.booking_date.asc()))
+        bookings = future_bookings.scalars().all()
+        return await response_builder(bookings, db)
+    elif date_str == "all":
+        all_bookings = await db.execute(select(Booking).order_by(Booking.booking_date.desc()))
+        bookings = all_bookings.scalars().all()
+        return await response_builder(bookings, db)
+    raise HTTPException(status_code=400, detail="Invalid date parameter")
+
+class UpdateBookingStatusRequest(BaseModel):
+    booking_id: int = Field(..., description="ID of the booking to update")
+    status: str = Field(..., description="New status for the booking")
+@router.post("/admin/booking-status-update")
+async def update_booking_status(
+    request: UpdateBookingStatusRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: User = Depends(deps.get_current_admin_user),
+) -> Any:
+    """
+    Update booking status (admin/staff/superuser only).
+    """
+    booking = await crud_booking.get(db=db, id=request.booking_id)
+    if not booking:
+        raise HTTPException(status_code=400, detail="Booking not found")
+    booking_in = BookingUpdate(status=request.status)
+    booking = await crud_booking.update(db=db, db_obj=booking, obj_in=booking_in)
+    return {"message": f"Booking {booking.id} status updated to {request.status} successfully"}
+
