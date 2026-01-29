@@ -6,3 +6,4 @@ from .booking_item import BookingItem
 from .otp import OTP
 from .address import Address
 from .pet import Pet
+from .order import Order

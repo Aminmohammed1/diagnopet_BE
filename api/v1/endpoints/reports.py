@@ -1,8 +1,11 @@
 from fastapi import APIRouter, UploadFile, Form, File, HTTPException, Depends
+from sqlalchemy.ext.asyncio import AsyncSession
+from db.session import get_db
 from utils.supabase_storage import upload_pdf, get_signed_url
 from utils.send_whatsapp_msg import send_message_via_twilio_with_media
 import uuid
-
+from crud import crud_order
+from schemas.order import OrderCreate
 router = APIRouter()
 
 MAX_FILE_SIZE = 10 * 1024 * 1024  # 10 MB
@@ -15,9 +18,11 @@ from db.models.user import User
 async def upload_report(
     # user_id: int = Form(...),
     appointment_id: int = Form(...),
+    booking_item_id: int = Form(...),
     phone_number: str = Form(...),
     file: UploadFile = File(...),
-    current_user: User = Depends(get_current_admin_or_staff_user)
+    current_user: User = Depends(get_current_admin_or_staff_user),
+    db: AsyncSession = Depends(get_db)
 ):
     if file.content_type != "application/pdf":
         raise HTTPException(status_code=400, detail="Only PDF files are allowed")
@@ -49,6 +54,16 @@ async def upload_report(
         
         # 4. Generate signed URL (short expiry, e.g., 1 hour)
         signed_url = get_signed_url(storage_path, expires_in=3600)
+
+        order_crud = crud_order.CrudOrder(db)
+        await order_crud.create_order(
+            OrderCreate(
+                user_id=current_user.id,
+                booking_id=appointment_id,
+                booking_item_id=booking_item_id,
+                file_link=signed_url
+            )
+        )
         
         # 5. Send via WhatsApp
         message_body = "Your medical report is ready. Please find it attached below."
@@ -116,3 +131,5 @@ async def get_user_reports(
     except Exception as e:
         print(f"Error in get_user_reports: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+# @router.get("/download-report")        

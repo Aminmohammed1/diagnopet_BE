@@ -2,6 +2,7 @@ from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from sqlalchemy.orm import selectinload
 from pydantic import BaseModel, Field
 from api import deps
 from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test
@@ -113,6 +114,7 @@ async def get_bookings_by_phone(
     # Get all bookings for this user with test names
     result = await db.execute(
         select(BookingModel)
+        .options(selectinload(BookingModel.address))
         .filter(BookingModel.user_id == user.id)
         .order_by(BookingModel.created_at.desc())
     )
@@ -135,10 +137,11 @@ async def get_bookings_by_phone(
         booking_dict = {
             "id": booking.id,
             "user_id": booking.user_id,
+            "address_id": booking.address_id,
             "booking_date": booking.booking_date,
             "status": booking.status,
             "address": booking.address,
-            "address_link": booking.address_link,
+            "address_link": booking.address.google_maps_link if booking.address else None,
             "created_at": booking.created_at,
             "updated_at": booking.updated_at,
             "items": [
@@ -150,6 +153,7 @@ async def get_bookings_by_phone(
                 }
                 for item, test_name in items_with_names
             ],
+            "booking_item_ids": [item.id for item, _ in items_with_names],
         }
         booking_responses.append(Booking(**booking_dict))
 
@@ -279,7 +283,7 @@ async def get_upcoming_bookings(
         temp["booking_time"] = local_time
         temp["status"] = booking.status
         complete_address = await crud_address.get(db, booking.address_id)
-        temp["address"] = complete_address.address_line1 + ", " + complete_address.address_line2 + ", " + complete_address.city + ", " + complete_address.state + "\n" + complete_address.postal_code
+        temp["address"] = complete_address.address_line1 or "" + ", " + complete_address.address_line2 or "" + ", " + complete_address.city or "" + ", " + complete_address.state or "" + "\n" + complete_address.postal_code or ""
         temp["address_link"] = complete_address.google_maps_link
         temp["tests"] = [{
             "id": test.id,

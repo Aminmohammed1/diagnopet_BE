@@ -14,7 +14,7 @@ from core.config import settings
 from db.base import Base
 
 # Import all models so Alembic can detect them for autogenerate
-from db.models import User, TestCategory, Test, Booking, BookingItem, OTP, Address
+from db.models import User, TestCategory, Test, Booking, BookingItem, OTP, Address, Order
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

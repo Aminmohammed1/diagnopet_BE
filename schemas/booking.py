@@ -47,8 +47,12 @@ class BookingInDBBase(BookingBase):
         from_attributes = True
 
 
+from schemas.address import Address
+
 class Booking(BookingInDBBase):
-    pass
+    address: Optional[Address] = None
+    address_link: Optional[str] = None
+    booking_item_ids: List[int] = []
 
 
 class PhoneLookupRequest(BaseModel):
