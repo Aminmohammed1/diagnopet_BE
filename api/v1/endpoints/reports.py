@@ -46,7 +46,7 @@ async def upload_report(
         storage_path = (
             f"phonenumber_{phone_number}/"
             f"appointment_{appointment_id}/"
-            f"report_{file_id}.pdf"
+            f"report_{booking_item_id}.pdf"
         )
         
         # 3. Upload to Supabase

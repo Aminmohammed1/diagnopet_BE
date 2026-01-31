@@ -5,8 +5,15 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from pydantic import BaseModel, Field
 from api import deps
+
 from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test
-from schemas.booking import Booking, BookingCreate, BookingUpdate, PhoneLookupRequest
+from schemas.booking import Booking as BookingSchema
+from schemas.booking import (
+    BookingCreate,
+    BookingUpdate,
+    PhoneLookupRequest,
+)
+
 from db.session import get_db
 from db.models.user import User
 from db.models.booking import Booking as BookingModel
@@ -18,7 +25,7 @@ from dateutil.relativedelta import relativedelta
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Booking])
+@router.get("/", response_model=List[BookingSchema])
 async def read_bookings(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
@@ -41,7 +48,7 @@ async def read_bookings(
     return bookings
 
 
-@router.post("/", response_model=Booking)
+@router.post("/", response_model=BookingSchema)
 async def create_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -57,7 +64,7 @@ async def create_booking(
     return booking
 
 
-@router.get("/{booking_id}", response_model=Booking)
+@router.get("/{booking_id}", response_model=BookingSchema)
 async def read_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -75,7 +82,7 @@ async def read_booking(
     return booking
 
 
-@router.put("/{booking_id}", response_model=Booking)
+@router.put("/{booking_id}", response_model=BookingSchema)
 async def update_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -95,7 +102,7 @@ async def update_booking(
     return booking
 
 
-@router.post("/lookup-by-phone", response_model=List[Booking])
+@router.post("/lookup-by-phone", response_model=List[BookingSchema])
 async def get_bookings_by_phone(
     *,
     db: AsyncSession = Depends(get_db),
@@ -119,6 +126,7 @@ async def get_bookings_by_phone(
         .filter(BookingModel.user_id == user.id)
         .order_by(BookingModel.created_at.desc())
     )
+    print("Result is:", result)
     bookings = result.scalars().all()
 
     # Manually construct the response with test names
@@ -141,7 +149,7 @@ async def get_bookings_by_phone(
             "booking_date": booking.booking_date,
             "status": booking.status,
             "address": booking.address,
-            "address_link": booking.address.google_maps_link if booking.address else None,
+            "address_link": booking.address.google_maps_link if booking.address else "",
             "created_at": booking.created_at,
             "updated_at": booking.updated_at,
             "items": [
@@ -155,7 +163,7 @@ async def get_bookings_by_phone(
             ],
             "booking_item_ids": [item.id for item, _ in items_with_names],
         }
-        booking_responses.append(Booking(**booking_dict))
+        booking_responses.append(BookingSchema(**booking_dict))
 
     return booking_responses
 
