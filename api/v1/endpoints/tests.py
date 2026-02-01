@@ -26,20 +26,6 @@ async def create_test(
 ):
     return await crud_test.create(db, obj_in=test_in)
 
-@router.get("/categories", response_model=List[str])
-async def get_all_categories_test(
-    db: AsyncSession = Depends(get_db),
-    admin: User = Depends(deps.get_current_admin_user)
-):
-    try:
-        result = []
-        categories = await crud_test_category.get_all(db)
-        for category in categories:
-            result.append(category.name)
-        return result
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-
 @router.get("/{test_id}", response_model=Test)
 async def read_test(
     test_id: int,
