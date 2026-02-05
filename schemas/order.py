@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import Optional, List
 from decimal import Decimal
 from datetime import datetime
 
@@ -25,3 +25,19 @@ class OrderInDBBase(OrderBase):
 
 class Order(OrderInDBBase):
     pass
+
+# Response schema for detailed order information
+class TestDetail(BaseModel):
+    test_id: int
+    test_name: str
+    booking_item_id: int
+    file_link: Optional[str] = None
+
+class OrderDetailResponse(BaseModel):
+    booking_id: int
+    booking_date: datetime
+    booking_address: str
+    tests: List[TestDetail]
+
+    class Config:
+        from_attributes = True

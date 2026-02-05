@@ -4,7 +4,7 @@ from db.session import get_db
 from utils.supabase_storage import upload_pdf, get_signed_url
 from utils.send_whatsapp_msg import send_message_via_twilio_with_media
 import uuid
-from crud import crud_order
+from crud import crud_order, crud_user
 from schemas.order import OrderCreate
 router = APIRouter()
 
@@ -42,7 +42,7 @@ async def upload_report(
         # unique_filename = f"{date}_{user_id}_{appointment_id}_{uuid.uuid4()}.{file_extension}"
 
         # 2. Generate unique filename
-        file_id = str(uuid.uuid4())
+        phone_number = ( phone_number if phone_number.startswith("+91") else "+91" + phone_number)
         storage_path = (
             f"phonenumber_{phone_number}/"
             f"appointment_{appointment_id}/"
@@ -56,12 +56,15 @@ async def upload_report(
         signed_url = get_signed_url(storage_path, expires_in=3600)
 
         order_crud = crud_order.CrudOrder(db)
+        user = await crud_user.get_by_phone(db=db, phone=phone_number)
+        if not user:
+            raise HTTPException(status_code=404, detail="User with this phone number not found")
         await order_crud.create_order(
             OrderCreate(
-                user_id=current_user.id,
+                user_id=user.id,
                 booking_id=appointment_id,
                 booking_item_id=booking_item_id,
-                file_link=signed_url
+                file_link=storage_path
             )
         )
         
@@ -133,3 +136,29 @@ async def get_user_reports(
         raise HTTPException(status_code=500, detail=str(e))
 
 # @router.get("/download-report")        
+
+@router.get("/download-report/{booking_id}/{booking_item_id}")
+async def download_report(
+    booking_id: int,
+    booking_item_id: int,
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    # order = await crud_order.get_by_booking_item_id(db, booking_item_id)
+    crud = crud_order.CrudOrder(db)
+    order = await crud.get_by_booking_id_and_booking_item_id(booking_id, booking_item_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="Report not found")
+
+    print("order user id", order.user_id)
+    print("current user id", current_user.id)
+    # 🔒 ownership check
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Unauthorized")
+
+    signed_url = get_signed_url(
+        file_path=order.file_link,
+        expires_in=600
+    )
+
+    return {"download_url": signed_url}
