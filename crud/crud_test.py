@@ -61,3 +61,5 @@ async def get_tests_by_booking_id(db: AsyncSession, booking_id: int) -> List[Tes
         .filter(BookingItem.booking_id == booking_id)
     )
     return result.scalars().all()
+
+
