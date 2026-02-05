@@ -1,3 +1,4 @@
+from crud.crud_order import CrudOrder
 from typing import Any, List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -5,8 +6,15 @@ from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
 from pydantic import BaseModel, Field
 from api import deps
-from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test
-from schemas.booking import Booking, BookingCreate, BookingUpdate, PhoneLookupRequest
+
+from crud import crud_booking, crud_user, crud_address, crud_pet, crud_test, crud_order
+from schemas.booking import Booking as BookingSchema
+from schemas.booking import (
+    BookingCreate,
+    BookingUpdate,
+    PhoneLookupRequest,
+)
+
 from db.session import get_db
 from db.models.user import User
 from db.models.booking import Booking as BookingModel
@@ -18,7 +26,7 @@ from dateutil.relativedelta import relativedelta
 router = APIRouter()
 
 
-@router.get("/", response_model=List[Booking])
+@router.get("/", response_model=List[BookingSchema])
 async def read_bookings(
     db: AsyncSession = Depends(get_db),
     skip: int = 0,
@@ -41,7 +49,7 @@ async def read_bookings(
     return bookings
 
 
-@router.post("/", response_model=Booking)
+@router.post("/", response_model=BookingSchema)
 async def create_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -57,7 +65,7 @@ async def create_booking(
     return booking
 
 
-@router.get("/{booking_id}", response_model=Booking)
+@router.get("/{booking_id}", response_model=BookingSchema)
 async def read_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -75,7 +83,7 @@ async def read_booking(
     return booking
 
 
-@router.put("/{booking_id}", response_model=Booking)
+@router.put("/{booking_id}", response_model=BookingSchema)
 async def update_booking(
     *,
     db: AsyncSession = Depends(get_db),
@@ -95,7 +103,7 @@ async def update_booking(
     return booking
 
 
-@router.post("/lookup-by-phone", response_model=List[Booking])
+@router.post("/lookup-by-phone", response_model=List[BookingSchema])
 async def get_bookings_by_phone(
     *,
     db: AsyncSession = Depends(get_db),
@@ -119,6 +127,7 @@ async def get_bookings_by_phone(
         .filter(BookingModel.user_id == user.id)
         .order_by(BookingModel.created_at.desc())
     )
+    print("Result is:", result)
     bookings = result.scalars().all()
 
     # Manually construct the response with test names
@@ -141,7 +150,7 @@ async def get_bookings_by_phone(
             "booking_date": booking.booking_date,
             "status": booking.status,
             "address": booking.address,
-            "address_link": booking.address.google_maps_link if booking.address else None,
+            "address_link": booking.address.google_maps_link if booking.address else "",
             "created_at": booking.created_at,
             "updated_at": booking.updated_at,
             "items": [
@@ -155,7 +164,7 @@ async def get_bookings_by_phone(
             ],
             "booking_item_ids": [item.id for item, _ in items_with_names],
         }
-        booking_responses.append(Booking(**booking_dict))
+        booking_responses.append(BookingSchema(**booking_dict))
 
     return booking_responses
 
@@ -255,42 +264,108 @@ async def get_upcoming_bookings(
         "address": "123 Pet Street, Hyderabad, Telangana 500001",
         "address_link": "https://maps.google.com/?q=123+Pet+Street+Hyderabad",
         "tests": [
-            {"id": 1, "name": "Complete Blood Count (CBC)", "sample_type": "Blood"},
-            {"id": 2, "name": "Liver Function Test", "sample_type": "Blood"}
+            {
+                "id": 1, 
+                "name": "Complete Blood Count (CBC)", 
+                "sample_type": "Blood",
+                "booking_item_id": 10,
+                "file_link": "https://..."
+            },
+            {
+                "id": 2, 
+                "name": "Liver Function Test", 
+                "sample_type": "Blood",
+                "booking_item_id": 11,
+                "file_link": "https://..."
+            }
         ],
         "total_amount": 2499.0,
         "created_at": "2026-01-25T10:30:00Z"
     }]
     """
-    # Fetch upcoming bookings for the current user
-    bookings = await crud_booking.get_upcoming_bookings(db=db, user_id=current_user.id)
-    result = []
+    # Fetch all orders for the current user
+    orders = await CrudOrder(db=db).get_orders_by_user(user_id=current_user.id)
+    
     from datetime import timezone
     import pytz
-
     ist = pytz.timezone("Asia/Kolkata")
 
+    print("these are the orders", orders)
     
-    for booking in bookings:
-        tests = await crud_test.get_tests_by_booking_id(db, booking.id)
-        temp = {}
-        temp["id"] = booking.id
-        temp["booking_date"] = booking.booking_date
-        utc_dt = booking.booking_date
-        local_time = utc_dt.astimezone(ist).strftime("%I:%M %p")
-        temp["booking_time"] = local_time
-        temp["status"] = booking.status
-        complete_address = await crud_address.get(db, booking.address_id)
-        temp["address"] = complete_address.address_line1 or "" + ", " + complete_address.address_line2 or "" + ", " + complete_address.city or "" + ", " + complete_address.state or "" + "\n" + complete_address.postal_code or ""
-        temp["address_link"] = complete_address.google_maps_link
-        temp["tests"] = [{
-            "id": test.id,
-            "name": test.name,
-            "sample_type": test.sample_type
-        } for test in tests]
-        temp["total_amount"] = sum(test.price for test in tests) if tests else 0.0
-        temp["created_at"] = booking.created_at
-        result.append(temp)
+    # Group orders by booking_id
+    bookings_dict = {}
+    
+    for order in orders:
+        booking_id = order.booking_id
+        
+        # Initialize booking entry if not exists
+        if booking_id not in bookings_dict:
+            # Fetch booking details from the booking model
+            booking_model = await crud_booking.get(db, booking_id)
+            if not booking_model:
+                continue
+                
+            # Get address details
+            complete_address = await crud_address.get(db, booking_model.address_id)
+            
+            # Convert UTC to IST for display
+            utc_dt = booking_model.booking_date
+            local_time = utc_dt.astimezone(ist).strftime("%I:%M %p")
+            
+            # Build address string
+            address_parts = []
+            if complete_address.address_line1:
+                address_parts.append(complete_address.address_line1)
+            if complete_address.address_line2:
+                address_parts.append(complete_address.address_line2)
+            if complete_address.city:
+                address_parts.append(complete_address.city)
+            if complete_address.state:
+                address_parts.append(complete_address.state)
+            if complete_address.postal_code:
+                address_parts.append(complete_address.postal_code)
+            
+            bookings_dict[booking_id] = {
+                "id": booking_id,
+                "booking_date": booking_model.booking_date.date(),
+                "booking_time": local_time,
+                "status": booking_model.status,
+                "address": ", ".join(address_parts),
+                "address_link": complete_address.google_maps_link if complete_address.google_maps_link else "",
+                "tests": [],
+                "created_at": booking_model.created_at,
+            }
+        
+        # Fetch test details for this booking item
+        booking_item = await db.get(BookingItemModel, order.booking_item_id)
+        if booking_item:
+            test = await crud_test.get(db, booking_item.test_id)
+            if test:
+                # Add test with booking_item_id and file_link
+                bookings_dict[booking_id]["tests"].append({
+                    "id": test.id,
+                    "name": test.name,
+                    "sample_type": test.sample_type,
+                    "booking_item_id": order.booking_item_id,
+                    "file_link": order.file_link if order.file_link else None
+                })
+    
+    # Calculate total_amount for each booking and convert to list
+    result = []
+    for booking_data in bookings_dict.values():
+        # Get all test prices for this booking
+        test_prices = []
+        for test_info in booking_data["tests"]:
+            test = await crud_test.get(db, test_info["id"])
+            if test:
+                test_prices.append(test.price)
+        
+        booking_data["total_amount"] = sum(test_prices) if test_prices else 0.0
+        result.append(booking_data)
+    
+    # Sort by booking_date descending (most recent first)
+    result.sort(key=lambda x: x["created_at"], reverse=True)
+    
     return result
 
 from pydantic import BaseModel, Field
@@ -409,6 +484,7 @@ async def get_today_bookings(
 class UpdateBookingStatusRequest(BaseModel):
     booking_id: int = Field(..., description="ID of the booking to update")
     status: str = Field(..., description="New status for the booking")
+
 @router.post("/admin/booking-status-update")
 async def update_booking_status(
     request: UpdateBookingStatusRequest,
@@ -424,4 +500,3 @@ async def update_booking_status(
     booking_in = BookingUpdate(status=request.status)
     booking = await crud_booking.update(db=db, db_obj=booking, obj_in=booking_in)
     return {"message": f"Booking {booking.id} status updated to {request.status} successfully"}
-

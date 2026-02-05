@@ -51,7 +51,6 @@ from schemas.address import Address
 
 class Booking(BookingInDBBase):
     address: Optional[Address] = None
-    address_link: Optional[str] = None
     booking_item_ids: List[int] = []
 
 
