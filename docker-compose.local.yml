@@ -1,0 +1,12 @@
+services:
+  app:
+    build: .
+    container_name: diagnopet_app
+    ports:
+      - "8000:8000"
+    env_file:
+      - /home/acewx/diagnopet_BE/.env
+    network_mode: host
+    restart: unless-stopped
+    volumes:
+      - .:/app
