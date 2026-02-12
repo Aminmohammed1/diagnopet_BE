@@ -26,7 +26,11 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:8080"],  # frontend URL(s)
+    allow_origins=[
+        "http://localhost:8080",  # Local development
+        "https://0637f221.diagnopet-review.pages.dev",  # Production frontend
+        "https://diagnopet-review.pages.dev",  # Production frontend (base domain)
+    ],
     allow_credentials=True,
     allow_methods=["*"],  # GET, POST, PUT, DELETE, etc.
     allow_headers=["*"],
