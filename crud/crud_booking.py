@@ -69,7 +69,7 @@ async def create(db: AsyncSession, obj_in: BookingCreate, user_id: int) -> Booki
     user_name = user.full_name if user else "Unknown User"
     try:
         content_sid = settings.TEMPLATE_ID  # Your template SID
-        to = "+918639675595"  # Recipient's number
+        to = "+918871755668"  # Recipient's number
         address = await crud_address.get(db, obj_in.address_id)
         if not address or not address.google_maps_link:
             address_link = "Address link not provided"
